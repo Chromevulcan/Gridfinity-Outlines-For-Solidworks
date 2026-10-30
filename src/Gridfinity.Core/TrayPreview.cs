@@ -55,9 +55,15 @@ namespace Gridfinity.Core
             sb.AppendLine("</g>");
 
             // Names (unflipped so they read normally) at each pocket centre.
+            // A dark box behind each name keeps it readable where it runs past the pocket.
             foreach (var p in t.Pockets)
+            {
+                double w = 0.56 * 3 * (p.Name ?? "").Length + 1.6;
+                sb.AppendFormat(inv, "<rect x=\"{0}\" y=\"{1}\" width=\"{2}\" height=\"4.2\" rx=\"0.8\" fill=\"#123\" fill-opacity=\"0.85\"/>\n",
+                    f(p.X - w / 2), f(-p.Y - 2.1), f(w));
                 sb.AppendFormat(inv, "<text x=\"{0}\" y=\"{1}\" font-size=\"3\" fill=\"#fff\" text-anchor=\"middle\" dominant-baseline=\"middle\">{2}</text>\n",
                     f(p.X), f(-p.Y), Escape(p.Name));
+            }
             foreach (var l in t.Labels)
                 sb.AppendFormat(inv, "<text x=\"{0}\" y=\"{1}\" font-size=\"{2}\" fill=\"#a33\" dominant-baseline=\"middle\">{3}</text>\n",
                     f(l.X), f(-l.Y), f(l.HeightMm), Escape(l.Text));
