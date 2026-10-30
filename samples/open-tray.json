@@ -1,0 +1,15 @@
+{
+  "Name": "PartsBin_Example",
+  "UnitsX": 2,
+  "UnitsY": 2,
+  "HeightUnits": 4,
+  "Style": "OpenTray",
+  "StackingLip": true,
+  "MagnetHoles": true,
+  "WallThickness": 1.2,
+  "CompartmentsX": 2,
+  "CompartmentsY": 1,
+  "DividerThickness": 1.2,
+  "AutoLayout": false,
+  "Pockets": []
+}

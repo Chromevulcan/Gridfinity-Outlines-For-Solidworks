@@ -1,0 +1,1368 @@
+{
+  "Name": "Sockets_1-2in_ALL",
+  "UnitsX": 16,
+  "UnitsY": 8,
+  "HeightUnits": 5,
+  "Style": "SolidBlock",
+  "MagnetHoles": false,
+  "AutoLayout": false,
+  "AutoGrowGrid": false,
+  "DefaultClearance": 0.6,
+  "Pockets": [
+    {
+      "Name": "SAE 3/8 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": -315.57,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 7/16 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": -290.38,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1/2 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": -265.19,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 9/16 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": -240.0,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 5/8 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": -214.81,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 11/16 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 23.52,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 14.5,
+      "X": -188.66,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 3/4 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 25.53,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 16.5,
+      "X": -160.53,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 13/16 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 27.53,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 18.5,
+      "X": -130.4,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 7/8 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 29.57,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 20.5,
+      "X": -98.25,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 10 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": 53.82,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 11 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": 79.06,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 12 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": 104.3,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 13 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": 129.54,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 14 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": 154.78,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 15 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": 180.02,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 16 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": 205.26,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 17 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 23.52,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 14.5,
+      "X": 231.44,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 18 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 25.53,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 16.5,
+      "X": 259.57,
+      "Y": 119.05,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 15/16 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 31.57,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 22.5,
+      "X": -310.58,
+      "Y": 59.43,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 33.53,
+      "Height": 39.93,
+      "CornerRadius": 2.0,
+      "Depth": 24.5,
+      "X": -274.43,
+      "Y": 60.35,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 1/16 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 35.64,
+      "Height": 41.91,
+      "CornerRadius": 2.0,
+      "Depth": 26.6,
+      "X": -236.25,
+      "Y": 61.34,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 1/8 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 37.52,
+      "Height": 41.91,
+      "CornerRadius": 2.0,
+      "Depth": 28.5,
+      "X": -196.07,
+      "Y": 61.34,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 3/16 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 39.62,
+      "Height": 43.76,
+      "CornerRadius": 2.0,
+      "Depth": 30.6,
+      "X": -153.9,
+      "Y": 62.27,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 1/4 in 6pt",
+      "Shape": "Rectangle",
+      "Width": 41.53,
+      "Height": 44.02,
+      "CornerRadius": 2.0,
+      "Depth": 32.5,
+      "X": -109.73,
+      "Y": 62.39,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 19 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 25.53,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 16.5,
+      "X": 55.76,
+      "Y": 59.43,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 21 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 27.61,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 18.6,
+      "X": 85.93,
+      "Y": 59.43,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 22 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 29.57,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 20.5,
+      "X": 118.12,
+      "Y": 59.43,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 24 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 31.52,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 22.5,
+      "X": 152.26,
+      "Y": 59.43,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 27 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 35.66,
+      "Height": 41.96,
+      "CornerRadius": 2.0,
+      "Depth": 26.6,
+      "X": 189.45,
+      "Y": 61.36,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 30 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 39.57,
+      "Height": 43.99,
+      "CornerRadius": 2.0,
+      "Depth": 30.5,
+      "X": 230.67,
+      "Y": 62.38,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 32 mm 6pt",
+      "Shape": "Rectangle",
+      "Width": 41.55,
+      "Height": 43.99,
+      "CornerRadius": 2.0,
+      "Depth": 32.5,
+      "X": 274.83,
+      "Y": 62.38,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 3/8 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -315.55,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 7/16 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -290.31,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1/2 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -265.06,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 9/16 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -239.82,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 5/8 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.64,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -214.58,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 11/16 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 23.55,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 14.5,
+      "X": -188.39,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 3/4 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 25.58,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 16.5,
+      "X": -160.23,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 13/16 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 27.51,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 18.5,
+      "X": -130.09,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 7/8 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 29.62,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 20.6,
+      "X": -97.92,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 15/16 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 31.57,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 22.5,
+      "X": -63.73,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 33.53,
+      "Height": 39.93,
+      "CornerRadius": 2.0,
+      "Depth": 24.5,
+      "X": -27.58,
+      "Y": -11.16,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 1/16 in 12pt",
+      "Shape": "Rectangle",
+      "Width": 35.61,
+      "Height": 41.91,
+      "CornerRadius": 2.0,
+      "Depth": 26.6,
+      "X": 10.59,
+      "Y": -10.17,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 9 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 53.79,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 10 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 78.98,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 11 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 104.17,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 12 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 129.36,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 13 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 154.55,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 14 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 179.74,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 15 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 204.93,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 16 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 230.12,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 17 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 23.5,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 14.4,
+      "X": 256.26,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 18 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 25.58,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 16.5,
+      "X": 284.4,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 19 mm 12pt",
+      "Shape": "Rectangle",
+      "Width": 25.58,
+      "Height": 38.1,
+      "CornerRadius": 2.0,
+      "Depth": 16.5,
+      "X": 313.58,
+      "Y": -12.08,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1/2 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 21.69,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -315.52,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 9/16 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 21.69,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -290.23,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 5/8 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 21.69,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 12.6,
+      "X": -264.94,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 11/16 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 23.65,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 14.6,
+      "X": -238.67,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 3/4 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 25.4,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 16.3,
+      "X": -210.54,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 13/16 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 27.58,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 18.5,
+      "X": -180.45,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 7/8 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 29.51,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 20.5,
+      "X": -148.3,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 15/16 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 31.55,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 22.5,
+      "X": -114.17,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "SAE 1 in 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 33.68,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 24.6,
+      "X": -77.96,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 13 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 53.79,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 14 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 78.98,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 15 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 104.17,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 16 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 21.59,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 12.5,
+      "X": 129.36,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 17 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 23.67,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 14.6,
+      "X": 155.59,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 18 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 25.68,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 16.6,
+      "X": 183.87,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 19 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 25.68,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 16.6,
+      "X": 213.15,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 21 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 27.58,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 18.5,
+      "X": 243.38,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 22 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 29.49,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 20.4,
+      "X": 275.52,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    },
+    {
+      "Name": "Metric 24 mm 6pt deep",
+      "Shape": "Rectangle",
+      "Width": 31.62,
+      "Height": 79.38,
+      "CornerRadius": 2.0,
+      "Depth": 22.6,
+      "X": 309.67,
+      "Y": -100.41,
+      "RotationDeg": 0,
+      "AllowRotate": false
+    }
+  ],
+  "Labels": [
+    {
+      "Text": "1/2\" DRIVE - SAE - 6 POINT - STANDARD",
+      "X": -272.89,
+      "Y": 145.9,
+      "HeightMm": 7.0
+    },
+    {
+      "Text": "1/2\" DRIVE - METRIC - 6 POINT - STANDARD",
+      "X": 95.11,
+      "Y": 145.9,
+      "HeightMm": 7.0
+    },
+    {
+      "Text": "3/8",
+      "X": -319.74,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "7/16",
+      "X": -296.22,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1/2",
+      "X": -269.36,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "9/16",
+      "X": -245.84,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "5/8",
+      "X": -218.98,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "11/16",
+      "X": -196.16,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "3/4",
+      "X": -164.7,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "13/16",
+      "X": -137.91,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "7/8",
+      "X": -102.42,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "10",
+      "X": 50.48,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "11",
+      "X": 75.72,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "12",
+      "X": 100.96,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "13",
+      "X": 126.2,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "14",
+      "X": 151.44,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "15",
+      "X": 176.68,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "16",
+      "X": 201.93,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "17",
+      "X": 228.11,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "18",
+      "X": 256.23,
+      "Y": 93.7,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "15/16",
+      "X": -318.09,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1",
+      "X": -276.1,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1 1/16",
+      "X": -244.59,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1 1/8",
+      "X": -202.74,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1 3/16",
+      "X": -162.24,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1 1/4",
+      "X": -116.4,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "19",
+      "X": 52.42,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "21",
+      "X": 82.59,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "22",
+      "X": 114.78,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "24",
+      "X": 148.92,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "27",
+      "X": 186.11,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "30",
+      "X": 227.33,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "32",
+      "X": 271.5,
+      "Y": 34.08,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1/2\" DRIVE - SAE - 12 POINT - STANDARD",
+      "X": -218.9,
+      "Y": 18.58,
+      "HeightMm": 7.0
+    },
+    {
+      "Text": "1/2\" DRIVE - METRIC - 12 POINT - STANDARD",
+      "X": 108.54,
+      "Y": 18.58,
+      "HeightMm": 7.0
+    },
+    {
+      "Text": "3/8",
+      "X": -319.72,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "7/16",
+      "X": -296.14,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1/2",
+      "X": -269.23,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "9/16",
+      "X": -245.66,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "5/8",
+      "X": -218.75,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "11/16",
+      "X": -195.9,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "3/4",
+      "X": -164.4,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "13/16",
+      "X": -137.59,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "7/8",
+      "X": -102.09,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "15/16",
+      "X": -71.23,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1",
+      "X": -29.25,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1 1/16",
+      "X": 2.25,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "9",
+      "X": 52.12,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "10",
+      "X": 75.65,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "11",
+      "X": 100.84,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "12",
+      "X": 126.03,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "13",
+      "X": 151.22,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "14",
+      "X": 176.41,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "15",
+      "X": 201.6,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "16",
+      "X": 226.79,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "17",
+      "X": 252.93,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "18",
+      "X": 281.06,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "19",
+      "X": 310.24,
+      "Y": -37.43,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1/2\" DRIVE - SAE - DEEP 6 POINT",
+      "X": -249.47,
+      "Y": -52.93,
+      "HeightMm": 7.0
+    },
+    {
+      "Text": "1/2\" DRIVE - METRIC - DEEP 6 POINT",
+      "X": 122.29,
+      "Y": -52.93,
+      "HeightMm": 7.0
+    },
+    {
+      "Text": "1/2",
+      "X": -319.69,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "9/16",
+      "X": -296.07,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "5/8",
+      "X": -269.11,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "11/16",
+      "X": -246.17,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "3/4",
+      "X": -214.71,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "13/16",
+      "X": -187.96,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "7/8",
+      "X": -152.47,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "15/16",
+      "X": -121.68,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "1",
+      "X": -79.63,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "13",
+      "X": 50.46,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "14",
+      "X": 75.65,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "15",
+      "X": 100.84,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "16",
+      "X": 126.03,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "17",
+      "X": 152.26,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "18",
+      "X": 180.53,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "19",
+      "X": 209.81,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "21",
+      "X": 240.04,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "22",
+      "X": 272.18,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    },
+    {
+      "Text": "24",
+      "X": 306.34,
+      "Y": -146.4,
+      "HeightMm": 6.0
+    }
+  ],
+  "LabelDepth": 0.8,
+  "LabelFont": "Arial",
+  "LabelBold": true
+}

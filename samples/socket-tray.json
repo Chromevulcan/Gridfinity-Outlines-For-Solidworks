@@ -1,0 +1,21 @@
+{
+  "Name": "SocketTray_Example",
+  "UnitsX": 3,
+  "UnitsY": 2,
+  "HeightUnits": 3,
+  "Style": "SolidBlock",
+  "MagnetHoles": true,
+  "AutoLayout": true,
+  "AutoGrowGrid": false,
+  "DefaultClearance": 0.4,
+  "Pockets": [
+    { "Name": "Ratchet (placeholder size)", "Shape": "Slot",      "Width": 150, "Height": 30, "Depth": 10 },
+    { "Name": "Extension (placeholder)",    "Shape": "Rectangle", "Width": 100, "Height": 14, "Depth": 8, "CornerRadius": 2 },
+    { "Name": "Socket A (placeholder)",     "Shape": "Circle",    "Width": 22,  "Depth": 12 },
+    { "Name": "Socket B (placeholder)",     "Shape": "Circle",    "Width": 20,  "Depth": 12 },
+    { "Name": "Socket C (placeholder)",     "Shape": "Circle",    "Width": 18,  "Depth": 12 },
+    { "Name": "Bit holder (placeholder)",   "Shape": "Hex",       "Width": 6.4, "Depth": 8 },
+    { "Name": "Screwdriver (placeholder)",  "Shape": "Slot",      "Width": 90,  "Height": 14, "Depth": 8,
+      "NotchDiameter": 12, "NotchOffset": 0 }
+  ]
+}

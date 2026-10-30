@@ -1,0 +1,21 @@
+{
+  "Type": "Baseplate",
+  "Name": "Baseplate_4x3",
+  "UnitsX": 4,
+  "UnitsY": 3,
+  "BaseThickness": 3.0,
+  "WebAtTop": 0.2,
+  "MagnetHoles": true,
+  "MagnetDiameter": 6.2,
+  "MagnetThickness": 2.1,
+  "MagnetFloor": 0.9,
+  "ScrewHoles": true,
+  "ScrewDiameter": 3.5,
+  "ConnectionSlots": true,
+  "SlotsLeft": true,
+  "SlotsRight": true,
+  "SlotsFront": true,
+  "SlotsBack": true,
+  "SlotClearance": 0.4,
+  "ClipLength": 19.6
+}

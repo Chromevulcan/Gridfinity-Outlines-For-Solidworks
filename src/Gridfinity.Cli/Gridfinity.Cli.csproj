@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Command-line tool: turns outline-app DXF/SVG exports into tray JSON (and a preview) without SolidWorks. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>gridfinity-outlines</AssemblyName>
+    <RootNamespace>Gridfinity.Cli</RootNamespace>
+    <Version>1.2.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gridfinity.Core\Gridfinity.Core.csproj" />
+  </ItemGroup>
+
+</Project>

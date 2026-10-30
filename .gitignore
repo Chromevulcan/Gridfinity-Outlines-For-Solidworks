@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+installer/Output/
+__pycache__/
+node_modules/
+tools/outline-fixtures/contours.json
