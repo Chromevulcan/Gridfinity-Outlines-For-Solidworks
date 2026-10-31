@@ -228,7 +228,7 @@ that looked wrong, and the last lines of `%LocalAppData%\GridfinityOutlines\Logs
 
 ## Licensing
 
-This project is MIT licensed (see `LICENSE`). It uses [Clipper2](https://github.com/AngusJohnson/Clipper2) (Boost Software
+This project is MIT licensed, copyright (c) 2026 Scott Myers (see `LICENSE`). It uses [Clipper2](https://github.com/AngusJohnson/Clipper2) (Boost Software
 License 1.0) for offsetting and cleaning outlines, [OpenCvSharp](https://github.com/shimat/opencvsharp) (Apache-2.0, with OpenCV
 under Apache-2.0) for tracing photos, and Newtonsoft.Json (MIT). outline-app is AGPL-3.0; none of its code is
 included or linked here, only the DXF/SVG files it exports are read. The photo tracer is written from scratch on OpenCV.
