@@ -22,11 +22,41 @@ namespace Gridfinity.Core
         public override string ToString() { return Name + " (" + Outline.Count + " points, " + Holes.Count + " holes)"; }
     }
 
+    public enum PaperSize { Letter, A4, Legal, A3, Tabloid, Custom }
+
+    public enum PhotoMode { PaperPhoto, Scan }
+
+    public static class PaperSizes
+    {
+        /// <summary>Paper size in mm, portrait (width less than height).</summary>
+        public static void Size(OutlineImportOptions o, out double w, out double h)
+        {
+            switch (o.Paper)
+            {
+                case PaperSize.A4: w = 210; h = 297; break;
+                case PaperSize.Legal: w = 215.9; h = 355.6; break;
+                case PaperSize.A3: w = 297; h = 420; break;
+                case PaperSize.Tabloid: w = 279.4; h = 431.8; break;
+                case PaperSize.Custom: w = Math.Min(o.PaperWidth, o.PaperHeight); h = Math.Max(o.PaperWidth, o.PaperHeight); break;
+                default: w = 215.9; h = 279.4; break;
+            }
+        }
+    }
+
     /// <summary>How imported outlines become pockets. Shown in the designer's import window.</summary>
     public sealed class OutlineImportOptions
     {
-        [Category("Pocket"), Description("How deep each outline pocket is cut, mm. Usually the part's thickness plus a little, or about two-thirds of it so the part sits proud and is easy to lift out.")]
+        [Category("Pocket"), Description("Flat parts: the part's thickness, mm. The cut is this less the Y offset (TopOffset). Round parts ignore it; their depth comes from their width in the outline.")]
         public double Depth { get; set; } = 12;
+
+        [Category("Pocket"), Description("Flat: a flat floor at Depth. Round: the part is taken as round in section, as wide as it is deep at every point (screwdrivers, sockets, pens lying on their side), and the pocket follows that shape in steps.")]
+        public PartBottom Bottom { get; set; } = PartBottom.Flat;
+
+        [Category("Pocket"), Description("Round bottoms only: the most the part is taken to be thick, mm. 0 = no limit.")]
+        public double RoundMaxThickness { get; set; }
+
+        [Category("Pocket"), Description("Y offset: how far the top of each part sits above the tray's top surface, mm. 0 = flush; 3 leaves 3 mm standing proud to grab. Only what lies below the surface is cut.")]
+        public double TopOffset { get; set; }
 
         [Category("Pocket"), Description("Total clearance added to each outline, mm (half on every side). Empty = use the tray's DefaultClearance (0.4 mm). Photo tracing is less exact than measuring, so 1.0 mm is a good start.")]
         public double? Clearance { get; set; } = 1.0;
@@ -49,10 +79,13 @@ namespace Gridfinity.Core
         [Category("Tray"), Description("OpenTray only: stacking lip on top of the walls.")]
         public bool StackingLip { get; set; }
 
-        [Category("Tray"), Description("Deboss each pocket's name (the file name) under it. Leaves extra room between pockets for the text.")]
+        [Category("Tray"), Description("Deboss each part's name (the file or shape name) beside it, along its centreline. You can change or clear each name on the Parts tab.")]
         public bool NameLabels { get; set; }
 
-        [Category("Tray"), Description("Largest grid the tray may grow to along X, cells. 5 (209.5 mm) fits most 220 mm+ print beds; 6 fits 256 mm beds.")]
+        [Category("Tray"), Description("Printer the tray must fit. A tray larger than its bed is split along cell lines into bins that fit."), TypeConverter(typeof(PrinterNameConverter))]
+        public string Printer { get; set; } = PrinterProfiles.DefaultName;
+
+        [Category("Tray"), Description("Largest grid the tray may grow to along X, cells. A tray larger than the printer is split into pieces when it is built.")]
         public int MaxUnitsX { get; set; } = 5;
 
         [Category("Tray"), Description("Largest grid the tray may grow to along Y, cells.")]
@@ -72,6 +105,32 @@ namespace Gridfinity.Core
 
         [Category("Shape"), Description("Mirror the outlines left to right, for a part traced from the wrong side.")]
         public bool Mirror { get; set; }
+
+        // ---- Photos (the built-in tracer) ----------------------------------------------------------
+
+        [Category("Photo"), Description("Size of the sheet of paper the parts lie on in the photo. Its corners set the scale and remove the camera's perspective.")]
+        public PaperSize Paper { get; set; } = PaperSize.Letter;
+
+        [Category("Photo"), Description("Custom paper width, mm.")]
+        public double PaperWidth { get; set; } = 216;
+
+        [Category("Photo"), Description("Custom paper height, mm.")]
+        public double PaperHeight { get; set; } = 279;
+
+        [Category("Photo"), Description("Scan: a flatbed scan at a known resolution, with no paper edge to find. Photo: a photo of the parts on paper.")]
+        public PhotoMode PhotoMode { get; set; } = PhotoMode.PaperPhoto;
+
+        [Category("Photo"), Description("Scan only: the scanner resolution, dots per inch.")]
+        public double ScanDpi { get; set; } = 300;
+
+        [Category("Photo"), Description("How readily something counts as part rather than paper, 0 to 100. Raise it for pale parts, lower it if shadows are traced.")]
+        public double Sensitivity { get; set; } = 50;
+
+        [Category("Photo"), Description("Ignore this much of the paper around its edge, mm, where the sheet curls or the corners are cast in shadow.")]
+        public double PaperBorder { get; set; } = 4;
+
+        [Category("Photo"), Description("Tracing resolution, pixels per mm of paper. 8 resolves 0.125 mm.")]
+        public double PixelsPerMm { get; set; } = 8;
     }
 
     /// <summary>
@@ -229,6 +288,10 @@ namespace Gridfinity.Core
                     Width = Math.Round(hi.X - lo.X, 2),
                     Height = Math.Round(hi.Y - lo.Y, 2),
                     Depth = o.Depth,
+                    Bottom = o.Bottom,
+                    RoundMaxThickness = o.RoundMaxThickness,
+                    LabelText = o.NameLabels ? shape.Name : null,
+                    LabelHeight = NameLabelHeight,
                     Clearance = o.Clearance,
                     NotchDiameter = o.NotchDiameter,
                     AllowRotate = o.AllowRotate
@@ -264,23 +327,41 @@ namespace Gridfinity.Core
                 MaxUnitsX = o.MaxUnitsX,
                 MaxUnitsY = o.MaxUnitsY,
             };
+            t.PartTopOffset = o.TopOffset;
+            t.Printer = o.Printer;
             t.Pockets.AddRange(ToPockets(shapes, o, notes));
+            FitHeight(t);
+            foreach (var p in t.Pockets.Where(q => q.Bottom == PartBottom.Round))
+                notes.Add(string.Format(CultureInfo.InvariantCulture, "{0}: round bottom, up to {1:0.#} mm thick, cut {2:0.#} mm deep.",
+                    p.Name, PartCuts.Field(p, t) == null ? 0 : PartCuts.Field(p, t).Max, PartCuts.MaxCutDepth(p, t)));
+            return t;
+        }
 
+        /// <summary>The deepest cut of any pocket in the tray, mm.</summary>
+        public static double DeepestCut(TrayDefinition t)
+        {
+            return t.Pockets.Count == 0 ? 0 : t.Pockets.Max(p => PartCuts.MaxCutDepth(p, t));
+        }
+
+        /// <summary>
+        /// Open trays: thickens the floor to hold the deepest pocket. Both styles: raises HeightUnits (never lowers
+        /// it) to the fewest that hold the deepest pocket.
+        /// </summary>
+        public static void FitHeight(TrayDefinition t) { FitHeight(t, false); }
+
+        /// <param name="raiseOnly">Keep a taller HeightUnits the user chose (the Parts tab); otherwise use the fewest that work.</param>
+        public static void FitHeight(TrayDefinition t, bool raiseOnly)
+        {
+            double depth = Math.Max(0, DeepestCut(t));
             if (t.Style == TrayStyle.OpenTray)
             {
                 // Pockets are cut into the floor, so the floor has to be thick enough to hold them.
                 double minFloor = t.MagnetHoles ? GridfinitySpec.MagnetDepth + 0.8 : 0.8;
-                t.FloorHeight = Math.Max(GridfinitySpec.BaseHeight, Math.Max(minFloor, o.Depth + t.MinFloorBelowPocket));
+                double floor = Math.Max(GridfinitySpec.BaseHeight, Math.Max(minFloor, depth + t.MinFloorBelowPocket));
+                t.FloorHeight = raiseOnly ? Math.Max(t.FloorHeight, floor) : floor;
             }
-            t.HeightUnits = HeightUnitsFor(t, o.Depth);
-
-            if (o.NameLabels)
-            {
-                // Labels sit in the gap under each pocket; leave room for them before laying out.
-                t.PocketSpacing = Math.Max(t.PocketSpacing, NameLabelHeight + 3);
-                t.EdgeMargin = Math.Max(t.EdgeMargin, NameLabelHeight + 3);
-            }
-            return t;
+            int needed = HeightUnitsFor(t, depth);
+            t.HeightUnits = raiseOnly ? Math.Max(t.HeightUnits, needed) : needed;
         }
 
         /// <summary>
@@ -290,28 +371,23 @@ namespace Gridfinity.Core
         /// </summary>
         public static CompileResult Resolve(TrayDefinition tray, bool nameLabels)
         {
+            // Names are laid out with their part (they are part of its footprint), so they are set before layout.
+            if (nameLabels)
+                foreach (var p in tray.Pockets.Where(q => q.Shape == PocketShape.Outline && string.IsNullOrWhiteSpace(q.LabelText)))
+                {
+                    p.LabelText = p.Name;
+                    if (p.LabelHeight <= 0) p.LabelHeight = NameLabelHeight;
+                }
             CompileResult c = TrayCompiler.Compile(tray);
             if (!c.Success) return c;
 
             var t = c.Resolved.Clone();
             t.AutoLayout = false;
             t.AutoGrowGrid = false;
-            if (nameLabels)
-            {
-                foreach (var p in t.Pockets)
-                {
-                    Vec2 lo, hi;
-                    p.BuildLoop(t.DefaultClearance).GetBounds(out lo, out hi);
-                    var label = new Label { Text = p.Name, HeightMm = NameLabelHeight };
-                    label.X = (lo.X + hi.X) / 2 - label.EstimatedWidth / 2;
-                    label.Y = lo.Y - NameLabelHeight / 2 - 1.0;
-                    t.Labels.Add(label);
-                }
-            }
             return TrayCompiler.Compile(t);
         }
 
-        public const double NameLabelHeight = 4.0;
+        public const double NameLabelHeight = 5.0;
 
         /// <summary>The fewest 7 mm height units that leave the tray's minimum floor under a pocket of this depth.</summary>
         public static int HeightUnitsFor(TrayDefinition t, double depth)

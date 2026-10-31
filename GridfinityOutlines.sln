@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BD8D180A-131
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gridfinity.Cli", "src\Gridfinity.Cli\Gridfinity.Cli.csproj", "{AF9AEF94-6BFB-4302-BB7F-0F1E7976592E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gridfinity.Trace", "src\Gridfinity.Trace\Gridfinity.Trace.csproj", "{7552C501-56AB-4C1A-BEEA-BB0EAC187F6F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,11 +36,16 @@ Global
 		{AF9AEF94-6BFB-4302-BB7F-0F1E7976592E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF9AEF94-6BFB-4302-BB7F-0F1E7976592E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF9AEF94-6BFB-4302-BB7F-0F1E7976592E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7552C501-56AB-4C1A-BEEA-BB0EAC187F6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7552C501-56AB-4C1A-BEEA-BB0EAC187F6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7552C501-56AB-4C1A-BEEA-BB0EAC187F6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7552C501-56AB-4C1A-BEEA-BB0EAC187F6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AF9AEF94-6BFB-4302-BB7F-0F1E7976592E} = {BD8D180A-131D-465F-98F1-F16BFD4F88C6}
+		{7552C501-56AB-4C1A-BEEA-BB0EAC187F6F} = {BD8D180A-131D-465F-98F1-F16BFD4F88C6}
 	EndGlobalSection
 EndGlobal

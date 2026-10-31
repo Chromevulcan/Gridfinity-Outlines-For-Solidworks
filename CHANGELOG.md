@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0
+- **Parts tab** (the designer's fifth tab): import a photo or outline-app exports and lay the parts onto the box from the Box tab, with a parts list, per-part settings, a to-scale preview and a status line.
+- **Built-in photo tracer** (`Gridfinity.Trace`, OpenCvSharp): finds the paper sheet, removes perspective, evens the light and traces every part; paper sizes, flatbed scans, sensitivity; a tracing overlay in the import window and `.trace.png` from the CLI.
+- **Round bottoms** ("follows the shape"): depth from the part's width at every point, cut in RoundStep layers grown so they never undercut; RoundMaxThickness cap.
+- **Y offset** (`PartTopOffset`, per-part `TopOffset`): the part tops sit on a plane above the tray; only what is below the surface is cut. The centreline sketch sits on a reference plane at that height.
+- **Part centrelines** (construction sketch) and **part names** debossed along them (`LabelText`, `LabelHeight`, `LabelSide`).
+- **Splitting for the printer**: printer list with bed sizes, custom bed, margin; oversized trays build as whole-cell pieces `<name>_A1`, ...; `split` CLI command.
+- CLI: photo input, `--round`, `--round-max`, `--offset`, `--step`, `--no-centerlines`, `--paper`, `--scan-dpi`, `--sensitivity`, `--printer`, `--bed`, `--no-split`.
+- Add-in resolves its dependencies and the native tracer from its own folder.
+
 ## 1.2.0 (Gridfinity Outlines)
 - New `Outline` pocket shape: any traced outline (concave, with holes), offset by the clearance with Clipper2, optional `KeepIslands`.
 - Outline import from outline-app exports: DXF (LWPOLYLINE/POLYLINE with bulges, CIRCLE, ELLIPSE, `$INSUNITS`), SVG (paths, shapes, transforms, mm units) and `_dxf.zip`. Cleans, simplifies and squares each trace to the grid.

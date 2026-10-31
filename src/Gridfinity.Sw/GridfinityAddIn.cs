@@ -15,8 +15,8 @@ namespace Gridfinity.Sw
 {
     /// <summary>
     /// SolidWorks add-in shell. Adds a "Gridfinity Outlines" menu with three commands: the tray designer dialog,
-    /// a one-click "build from JSON file", and "build tray from outlines" (outline-app DXF/SVG exports straight to a
-    /// part). Register with regasm /codebase (see scripts\register.cmd).
+    /// a one-click "build from JSON file", and "build tray from photos or outlines" (photos of parts on paper, or
+    /// outline-app DXF/SVG exports, straight to a part). Register with regasm /codebase (see scripts\register.cmd).
     ///
     /// This add-in has its own COM identity, menu group and assembly names, so it can be installed next to the
     /// original Gridfinity for SolidWorks add-in without either one replacing the other.
@@ -27,7 +27,7 @@ namespace Gridfinity.Sw
     public class GridfinityAddIn : ISwAddin
     {
         private const string AddInTitle = "Gridfinity Outlines";
-        private const string AddInDescription = "Parametric Gridfinity trays, baseplates and clips, with pockets traced from photos (outline-app DXF/SVG).";
+        private const string AddInDescription = "Parametric Gridfinity trays, baseplates and clips, with part cutouts traced from photos or outline-app DXF/SVG exports.";
         private const int GroupId = 0x47464F4C; // "GFOL"; the original add-in uses "GFNY"
         private const int DesignerCommandId = 1;
         private const int JsonCommandId = 2;
@@ -48,6 +48,58 @@ namespace Gridfinity.Sw
             new System.Diagnostics.Stopwatch();
 
         private static readonly object LogLock = new object();
+
+        // ---- Dependency loading
+        // SolidWorks probes its own folder, not ours, for the add-in's dependencies (OpenCvSharp, System.Memory and
+        // friends) and for the native OpenCV library behind the photo tracer. Point both at the add-in folder.
+
+        private static readonly string AddInFolder = Path.GetDirectoryName(typeof(GridfinityAddIn).Assembly.Location);
+
+        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern IntPtr LoadLibrary(string path);
+
+        static GridfinityAddIn()
+        {
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveFromAddInFolder;
+        }
+
+        private static Assembly ResolveFromAddInFolder(object sender, ResolveEventArgs args)
+        {
+            try
+            {
+                string name = new AssemblyName(args.Name).Name;
+                foreach (Assembly loaded in AppDomain.CurrentDomain.GetAssemblies())
+                    if (string.Equals(loaded.GetName().Name, name, StringComparison.OrdinalIgnoreCase)) return loaded;
+                string candidate = Path.Combine(AddInFolder, name + ".dll");
+                return File.Exists(candidate) ? Assembly.LoadFrom(candidate) : null;
+            }
+            catch { return null; }
+        }
+
+        private static bool _nativeTracerLoaded;
+
+        /// <summary>Loads OpenCvSharpExtern.dll from the add-in folder so tracing a photo works inside SolidWorks.</summary>
+        internal static void LoadNativeTracer()
+        {
+            if (_nativeTracerLoaded) return;
+            foreach (string candidate in new[]
+            {
+                Path.Combine(AddInFolder, "dll", "x64", "OpenCvSharpExtern.dll"),
+                Path.Combine(AddInFolder, "runtimes", "win-x64", "native", "OpenCvSharpExtern.dll"),
+                Path.Combine(AddInFolder, "OpenCvSharpExtern.dll")
+            })
+            {
+                if (!File.Exists(candidate)) continue;
+                if (LoadLibrary(candidate) != IntPtr.Zero)
+                {
+                    _nativeTracerLoaded = true;
+                    Log("Photo tracer: loaded " + candidate);
+                    return;
+                }
+                Log("Photo tracer: could not load " + candidate + " (Win32 error " + Marshal.GetLastWin32Error() + ")");
+            }
+            Log("Photo tracer: OpenCvSharpExtern.dll not found next to the add-in; photos cannot be traced.");
+        }
 
         private static string LogPath
         {
@@ -319,6 +371,9 @@ namespace Gridfinity.Sw
 
                 LogEnvironment(_app);
 
+                try { LoadNativeTracer(); }
+                catch (Exception ex) { Log("Photo tracer: " + ex.Message); }
+
                 Log("ConnectToSW: SOLIDWORKS add-in connection established.");
 
                 _menuCreated = false;
@@ -516,9 +571,9 @@ namespace Gridfinity.Sw
                     menu);
 
                 int outlinesIndex = candidateGroup.AddCommandItem2(
-                    "Build tray from outlines (DXF/SVG)...",
+                    "Build tray from photo or outlines...",
                     -1,
-                    "Turn outline-app exports into a Gridfinity tray in one step",
+                    "Turn a photo of parts on paper, or outline-app exports, into a Gridfinity tray in one step",
                     "Build from outlines",
                     0,
                     "OnBuildFromOutlines",

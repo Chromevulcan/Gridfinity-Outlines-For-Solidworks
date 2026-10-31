@@ -32,6 +32,20 @@ namespace Gridfinity.Core
         Outline
     }
 
+    /// <summary>The underside of a traced part, used to shape its pocket (Outline pockets only).</summary>
+    public enum PartBottom
+    {
+        /// <summary>A flat part (a wrench, a hex key): the pocket has a flat floor at the part's thickness.</summary>
+        Flat,
+        /// <summary>
+        /// A round part lying on its side (a screwdriver, a socket, a pen): the cross-section is taken as round, with its
+        /// diameter equal to the part's local width in the photo, so the pocket deepens where the part is wider.
+        /// </summary>
+        Round
+    }
+
+    public enum LabelSide { Below, Above }
+
     /// <summary>One cut-out in a tray or holder block: a socket, wrench, bit, screwdriver, and so on.</summary>
     public class Pocket
     {
@@ -59,8 +73,28 @@ namespace Gridfinity.Core
         [Category("Shape"), Description("Outline only: leave material standing inside the traced holes (an island the part sits over). Off cuts the holes away with the rest of the pocket.")]
         public bool KeepIslands { get; set; }
 
-        [Category("Depth"), Description("Pocket depth, mm.")]
+        [Category("Depth"), Description("Pocket depth, mm. Outline pockets with a flat bottom: the part's thickness (the cut is this minus the Y offset). Ignored for round bottoms.")]
         public double Depth { get; set; } = 6;
+
+        // ---- Traced parts (Outline pockets) -----------------------------------------------------
+
+        [Category("Part"), Description("Flat: a flat floor at the part's thickness (Depth). Round: a round bottom whose depth follows the part's width along its length, as for a screwdriver or socket lying on its side.")]
+        public PartBottom Bottom { get; set; } = PartBottom.Flat;
+
+        [Category("Part"), Description("Round bottoms only: limit how thick the part is taken to be, mm. Use it for a part that is round in one place and flat in another. 0 = no limit.")]
+        public double RoundMaxThickness { get; set; }
+
+        [Category("Part"), Description("Height of the top of this part above the tray's top surface, mm (the Y offset). Only what lies below the surface is cut. Empty = the tray's PartTopOffset.")]
+        public double? TopOffset { get; set; }
+
+        [Category("Part"), Description("Name debossed beside the part, along its centreline. Empty = no name.")]
+        public string LabelText { get; set; }
+
+        [Category("Part"), Description("Character height of the name, mm.")]
+        public double LabelHeight { get; set; } = 5;
+
+        [Category("Part"), Description("Which side of the centreline the name goes on, before the part is turned by layout.")]
+        public LabelSide LabelSide { get; set; } = LabelSide.Below;
 
         [Category("Fit"), Description("Total clearance added to the nominal size, mm. Empty = use the tray default.")]
         public double? Clearance { get; set; }
@@ -171,9 +205,112 @@ namespace Gridfinity.Core
                 lo = new Vec2(Math.Min(lo.X, nlo.X), Math.Min(lo.Y, nlo.Y));
                 hi = new Vec2(Math.Max(hi.X, nhi.X), Math.Max(hi.Y, nhi.Y));
             }
+
+            // Leave room for the name beside the part so layout never puts another part on top of it.
+            var band = LabelBandLocal(defaultClearance);
+            if (band != null)
+            {
+                foreach (var corner in band)
+                {
+                    var q = corner.Rotated(rot);
+                    lo = new Vec2(Math.Min(lo.X, q.X), Math.Min(lo.Y, q.Y));
+                    hi = new Vec2(Math.Max(hi.X, q.X), Math.Max(hi.Y, q.Y));
+                }
+            }
             min = lo;
             max = hi;
         }
+
+        // ---- Centreline and name ----------------------------------------------------------------
+
+        /// <summary>Gap between the edge of the pocket and the name beside it, mm.</summary>
+        public const double LabelGap = 1.2;
+
+        [Newtonsoft.Json.JsonIgnore, Browsable(false)]
+        public bool HasLabel { get { return !string.IsNullOrWhiteSpace(LabelText) && LabelHeight > 0; } }
+
+        /// <summary>
+        /// The part's centreline: through the middle of its outline along its long axis (local X; the importer
+        /// turns every traced part that way), from end to end, at the pocket's placement.
+        /// </summary>
+        public void GetCenterline(double defaultClearance, out Vec2 start, out Vec2 end)
+        {
+            Vec2 lo, hi;
+            MakeOutline(defaultClearance).GetBounds(out lo, out hi);
+            double y = (lo.Y + hi.Y) / 2, rot = RotationDeg * Math.PI / 180.0;
+            var at = new Vec2(X, Y);
+            start = new Vec2(lo.X, y).Rotated(rot) + at;
+            end = new Vec2(hi.X, y).Rotated(rot) + at;
+        }
+
+        /// <summary>
+        /// Where the name goes: a line parallel to the centreline, beside the pocket, that the text is centred on,
+        /// running left to right as you read it (so the text is never upside down whichever way layout turned
+        /// the part). Null when there is no name.
+        /// </summary>
+        public bool GetLabelLine(double defaultClearance, out Vec2 start, out Vec2 end)
+        {
+            start = end = new Vec2(0, 0);
+            if (!HasLabel) return false;
+            Vec2 lo, hi;
+            MakeOutline(defaultClearance).GetBounds(out lo, out hi);
+            double y = LabelSide == LabelSide.Below ? lo.Y - LabelGap - LabelHeight / 2 : hi.Y + LabelGap + LabelHeight / 2;
+            double rot = RotationDeg * Math.PI / 180.0;
+            var at = new Vec2(X, Y);
+            start = new Vec2(lo.X, y).Rotated(rot) + at;
+            end = new Vec2(hi.X, y).Rotated(rot) + at;
+
+            // Read left to right; a line pointing straight down reads bottom to top.
+            Vec2 d = end - start;
+            if (d.X < -1e-9 || (Math.Abs(d.X) <= 1e-9 && d.Y < 0)) { var t = start; start = end; end = t; }
+            return true;
+        }
+
+        /// <summary>The name's rectangle in local (unrotated) coordinates, or null.</summary>
+        private List<Vec2> LabelBandLocal(double defaultClearance)
+        {
+            if (!HasLabel) return null;
+            Vec2 lo, hi;
+            MakeOutline(defaultClearance).GetBounds(out lo, out hi);
+            double near = LabelSide == LabelSide.Below ? lo.Y - LabelGap : hi.Y + LabelGap;
+            double far = LabelSide == LabelSide.Below ? near - LabelHeight : near + LabelHeight;
+            return new List<Vec2> { new Vec2(lo.X, near), new Vec2(hi.X, near), new Vec2(hi.X, far), new Vec2(lo.X, far) };
+        }
+
+        /// <summary>The name's rectangle at the pocket's placement, or null.</summary>
+        public List<Vec2> BuildLabelBand(double defaultClearance)
+        {
+            var band = LabelBandLocal(defaultClearance);
+            if (band == null) return null;
+            double rot = RotationDeg * Math.PI / 180.0;
+            return band.Select(q => q.Rotated(rot) + new Vec2(X, Y)).ToList();
+        }
+
+        /// <summary>The outline (with clearance) in local coordinates: centred, unrotated.</summary>
+        public Loop BuildLocalLoop(double defaultClearance) { return MakeOutline(defaultClearance); }
+
+        /// <summary>Islands in local coordinates (see <see cref="BuildIslandLoops"/>).</summary>
+        public List<List<Vec2>> BuildLocalIslands(double defaultClearance)
+        {
+            var list = new List<List<Vec2>>();
+            if (Shape != PocketShape.Outline || !KeepIslands || Holes == null) return list;
+            double c = Clearance ?? defaultClearance;
+            foreach (var hole in Holes)
+            {
+                if (hole == null || hole.Count < 3) continue;
+                foreach (var piece in OutlineGeometry.Offset(hole, -c / 2))
+                {
+                    Vec2 lo, hi;
+                    OutlineGeometry.Bounds(piece, out lo, out hi);
+                    if (Math.Min(hi.X - lo.X, hi.Y - lo.Y) >= MinIslandSize) list.Add(piece);
+                }
+            }
+            return list;
+        }
+
+        // Height field cache for round bottoms (see PartCuts).
+        [Newtonsoft.Json.JsonIgnore] internal object HeightCache;
+        [Newtonsoft.Json.JsonIgnore] internal string HeightCacheKey;
 
         private Loop MakeOutline(double defaultClearance)
         {

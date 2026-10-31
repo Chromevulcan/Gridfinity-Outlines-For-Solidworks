@@ -83,6 +83,36 @@ namespace Gridfinity.Core
         [Category("Layout"), Description("Minimum material left under the deepest point of a pocket, mm.")]
         public double MinFloorBelowPocket { get; set; } = 1.0;
 
+        // ---- Parts (traced outlines) ---------------------------------------------------------
+        [Category("Parts"), Description("Y offset: how far the top of each part sits above the tray's top surface, mm. 0 = flush. A positive value makes the parts stand proud so they are easy to grab; only what lies below the surface is cut. Negative sinks them below the surface. A part can override it.")]
+        public double PartTopOffset { get; set; }
+
+        [Category("Parts"), Description("Round bottoms are cut as steps this tall, mm. Smaller is smoother but adds features. 0.4 mm is two 0.2 mm layers. Each step is cut to the deeper side, so the part never sits on a step.")]
+        public double RoundStep { get; set; } = 0.4;
+
+        [Category("Parts"), Description("Add a sketch with every part's centreline (and outline at its top), on a plane at the part tops, for lining up your own text or features.")]
+        public bool PartCenterlines { get; set; } = true;
+
+        // ---- Printer / splitting --------------------------------------------------------------
+        [Category("Printer"), Description("Printer the tray must fit. Larger trays are split along cell lines into bins that do."), TypeConverter(typeof(PrinterNameConverter))]
+        public string Printer { get; set; } = PrinterProfiles.DefaultName;
+
+        [Category("Printer"), Description("Custom printer bed width (X), mm. Used when Printer is Custom.")]
+        public double CustomBedWidth { get; set; } = 220;
+
+        [Category("Printer"), Description("Custom printer bed depth (Y), mm. Used when Printer is Custom.")]
+        public double CustomBedDepth { get; set; } = 220;
+
+        [Category("Printer"), Description("Space kept clear around the part on each side of the bed (for the skirt or brim), mm.")]
+        public double BedMargin { get; set; } = 2;
+
+        [Category("Printer"), Description("Split a tray that is larger than the printer bed into pieces that fit. Each piece is a normal Gridfinity bin; parts that cross a seam continue in the next piece.")]
+        public bool SplitToFitPrinter { get; set; } = true;
+
+        /// <summary>Set on the pieces made by <see cref="TraySplitter"/>.</summary>
+        [Browsable(false)]
+        public SplitPieceInfo Piece { get; set; }
+
         // ---- Pockets --------------------------------------------------------------------------
         [Category("Pockets")]
         public List<Pocket> Pockets { get; set; } = new List<Pocket>();

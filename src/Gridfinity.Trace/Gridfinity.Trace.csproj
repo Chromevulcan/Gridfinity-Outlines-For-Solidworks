@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Built-in photo tracer: finds the sheet of paper in a photo, removes the perspective, and traces the parts lying on
+    it. Uses OpenCvSharp (Apache-2.0) over OpenCV (Apache-2.0). The native OpenCV library comes from a runtime package
+    referenced by the application (the add-in, the CLI, the tests), not from here.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Gridfinity.Trace</RootNamespace>
+    <AssemblyName>GridfinityOutlines.Trace</AssemblyName>
+    <Version>1.3.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260627" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gridfinity.Core\Gridfinity.Core.csproj" />
+  </ItemGroup>
+
+</Project>

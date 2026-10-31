@@ -112,8 +112,8 @@ namespace Gridfinity.Core.Tests
                 Points = new[] { new Vec2(-30, -10), new Vec2(30, -10), new Vec2(30, 0), new Vec2(-20, 0), new Vec2(-20, 10), new Vec2(-30, 10) }.ToList()
             });
 
-            var a = TrayModeler.CreatePlan(plain).Features.Where(f => !f.Name.StartsWith("Pockets")).ToList();
-            var b = TrayModeler.CreatePlan(traced).Features.Where(f => !f.Name.StartsWith("Pockets")).ToList();
+            var a = TrayModeler.CreatePlan(plain).Features.Where(f => !f.Name.StartsWith("Pockets") && f.Op != FeatureOp.Sketch).ToList();
+            var b = TrayModeler.CreatePlan(traced).Features.Where(f => !f.Name.StartsWith("Pockets") && f.Op != FeatureOp.Sketch).ToList();
             Assert.Equal(a.Select(f => f.Name), b.Select(f => f.Name));
             for (int i = 0; i < a.Count; i++)
             {

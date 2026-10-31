@@ -42,7 +42,9 @@ namespace Gridfinity.Sw
 
         public static Feature Execute(ModelDoc2 model, FeaturePlan fp, DirectionFlags flags)
         {
-            if (fp.Loops.Count == 0 && fp.Texts.Count == 0) throw new BuildException("Feature '" + fp.Name + "' has no sketch geometry.");
+            if (fp.Loops.Count == 0 && fp.Texts.Count == 0 && fp.Lines.Count == 0) throw new BuildException("Feature '" + fp.Name + "' has no sketch geometry.");
+
+            if (fp.Op == FeatureOp.Sketch) return ReferenceSketch(model, fp);
 
             bool top = fp.Plane == SketchPlane.Top;
             if (top && !flags.TopOk && !flags.TopProbing)
@@ -94,6 +96,100 @@ namespace Gridfinity.Sw
 
             try { feature.Name = fp.Name; } catch { /* a duplicate name is not worth failing the build */ }
             return feature;
+        }
+
+        /// <summary>
+        /// A sketch with nothing extruded: construction centrelines (and outlines) on a plane parallel to the Front plane
+        /// at fp.SketchZ, so they sit at the part tops for lining up text or other features.
+        /// </summary>
+        private static Feature ReferenceSketch(ModelDoc2 model, FeaturePlan fp)
+        {
+            Feature plane = OffsetPlane(model, fp.SketchZ, fp.Name + " plane");
+            model.ClearSelection2(true);
+            if (plane == null) plane = FindPlane(model, 0);
+            if (plane == null || !plane.Select2(false, 0)) throw new BuildException("Could not select a plane for '" + fp.Name + "'.");
+
+            SketchManager sm = model.SketchManager;
+            sm.InsertSketch(true);
+            try
+            {
+                sm.AddToDB = true;
+                try
+                {
+                    foreach (LinePlan line in fp.Lines)
+                    {
+                        // A centreline is construction geometry already.
+                        sm.CreateCenterLine(M(line.Start.X), M(line.Start.Y), 0, M(line.End.X), M(line.End.Y), 0);
+                    }
+                    foreach (Loop loop in fp.Loops)
+                        foreach (SketchSegment seg in DrawLoop(sm, loop, 1, 1))
+                            if (fp.LoopsAsConstruction && seg != null) seg.ConstructionGeometry = true;
+                }
+                finally { sm.AddToDB = false; }
+            }
+            catch
+            {
+                try { sm.InsertSketch(true); } catch { }
+                throw;
+            }
+
+            Feature sketch = sm.ActiveSketch as Feature;
+            sm.InsertSketch(true);
+            model.ClearSelection2(true);
+            if (sketch == null) throw new BuildException("SolidWorks did not create the sketch '" + fp.Name + "'.");
+            try { sketch.Name = fp.Name; } catch { }
+            return sketch;
+        }
+
+        /// <summary>
+        /// A reference plane parallel to the Front plane at height z (mm, +Z = up out of the tray's base). The direction
+        /// SolidWorks offsets in is checked from the plane's position and the plane remade the other way if needed.
+        /// Null if it cannot be made (the caller then uses the Front plane).
+        /// </summary>
+        private static Feature OffsetPlane(ModelDoc2 model, double z, string name)
+        {
+            if (Math.Abs(z) < 1e-6) return null;
+            Feature front = FindPlane(model, 0);
+            if (front == null) return null;
+            foreach (bool flip in z > 0 ? new[] { false, true } : new[] { true, false })
+            {
+                try
+                {
+                    model.ClearSelection2(true);
+                    if (!front.Select2(false, 0)) return null;
+                    int constraint = (int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_Distance;
+                    if (flip) constraint |= (int)swRefPlaneReferenceConstraints_e.swRefPlaneReferenceConstraint_OptionFlip;
+                    object created = model.FeatureManager.InsertRefPlane(constraint, M(Math.Abs(z)), 0, 0, 0, 0);
+                    Feature f = created as Feature;
+                    if (f == null) continue;
+                    double actual = PlaneZ(f);
+                    if (double.IsNaN(actual) || Math.Abs(actual - M(z)) < 1e-6)
+                    {
+                        try { f.Name = name; } catch { }
+                        return f;
+                    }
+                    // The wrong side: delete it and try the other way.
+                    model.ClearSelection2(true);
+                    if (f.Select2(false, 0)) model.EditDelete();
+                }
+                catch (Exception ex) { SwLog.Write("Offset plane at " + z + " mm failed: " + ex.Message); }
+            }
+            model.ClearSelection2(true);
+            return null;
+        }
+
+        // Height (m) of a plane parallel to the Front plane, from its transform; NaN if unknown.
+        private static double PlaneZ(Feature f)
+        {
+            try
+            {
+                RefPlane rp = f.GetSpecificFeature2() as RefPlane;
+                MathTransform tr = rp == null ? null : rp.Transform;
+                double[] data = tr == null ? null : tr.ArrayData as double[];
+                if (data == null || data.Length < 12) return double.NaN;
+                return data[11]; // translation Z
+            }
+            catch { return double.NaN; }
         }
 
         public static double Volume(ModelDoc2 model)
@@ -173,8 +269,10 @@ namespace Gridfinity.Sw
 
             // The anchor is the start of the text; capitals are about 0.7 of the character height,
             // so drop the anchor by half of that to centre the text on tp.Y.
-            double ax = M(tp.X);
-            double ay = M(tp.Y - 0.35 * tp.HeightMm);
+            // Along a turned line the drop is turned too.
+            double ang = tp.AngleDeg * Math.PI / 180.0;
+            double ax = M(tp.X + Math.Sin(ang) * 0.35 * tp.HeightMm);
+            double ay = M(tp.Y - Math.Cos(ang) * 0.35 * tp.HeightMm);
 
             // Every argument set failed in the same way last time, so the arguments are probably not the problem. Try the
             // same call typed instead of late-bound, and the text without the inch mark, as well as the original.
@@ -251,6 +349,12 @@ namespace Gridfinity.Sw
                     format.CharHeight = M(tp.HeightMm);
                     if (!string.IsNullOrEmpty(tp.Font)) { try { format.TypeFaceName = tp.Font; } catch { } }
                     try { format.Bold = tp.Bold; } catch { }
+                    if (Math.Abs(ang) > 1e-9)
+                    {
+                        // Escapement is the angle of the text line, in radians.
+                        try { format.Escapement = ang; }
+                        catch (Exception ex) { SwLog.Write("Could not turn the text '" + tp.Text + "': " + ex.Message); }
+                    }
                     c.SetTextFormat(false, format);
                     return;
                 }
@@ -264,12 +368,13 @@ namespace Gridfinity.Sw
             throw new BuildException("The text '" + tp.Text + "' was created but its size could not be set (" + failure + ").");
         }
 
-        private static void DrawLoop(SketchManager sm, Loop loop, int sx, int sy)
+        private static List<SketchSegment> DrawLoop(SketchManager sm, Loop loop, int sx, int sy)
         {
+            var made = new List<SketchSegment>();
             if (loop.IsCircle)
             {
-                sm.CreateCircleByRadius(M(sx * loop.Center.X), M(sy * loop.Center.Y), 0, M(loop.Radius));
-                return;
+                made.Add(sm.CreateCircleByRadius(M(sx * loop.Center.X), M(sy * loop.Center.Y), 0, M(loop.Radius)));
+                return made;
             }
 
             // Mirroring one axis (not both) turns a counter-clockwise arc into a clockwise one.
@@ -279,16 +384,17 @@ namespace Gridfinity.Sw
             {
                 if (s.Kind == SegmentKind.Line)
                 {
-                    sm.CreateLine(M(sx * s.Start.X), M(sy * s.Start.Y), 0, M(sx * s.End.X), M(sy * s.End.Y), 0);
+                    made.Add(sm.CreateLine(M(sx * s.Start.X), M(sy * s.Start.Y), 0, M(sx * s.End.X), M(sy * s.End.Y), 0));
                 }
                 else
                 {
                     // Direction 1 = counter-clockwise from the first point to the second.
-                    sm.CreateArc(M(sx * s.Center.X), M(sy * s.Center.Y), 0,
+                    made.Add(sm.CreateArc(M(sx * s.Center.X), M(sy * s.Center.Y), 0,
                                  M(sx * s.Start.X), M(sy * s.Start.Y), 0,
-                                 M(sx * s.End.X), M(sy * s.End.Y), 0, arcDirection);
+                                 M(sx * s.End.X), M(sy * s.End.Y), 0, arcDirection));
                 }
             }
+            return made;
         }
     }
 

@@ -12,7 +12,10 @@ namespace Gridfinity.Core
     /// </summary>
     public static class TrayPreview
     {
-        public static string ToSvg(TrayDefinition t)
+        public static string ToSvg(TrayDefinition t) { return ToSvg(t, null); }
+
+        /// <summary>With <paramref name="split"/>, the seams where the tray will be cut into printable pieces are drawn too.</summary>
+        public static string ToSvg(TrayDefinition t, SplitResult split)
         {
             var inv = CultureInfo.InvariantCulture;
             double W = t.OuterWidth, D = t.OuterDepth, pad = 6;
@@ -24,8 +27,9 @@ namespace Gridfinity.Core
             sb.AppendFormat(inv, "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{0}mm\" height=\"{1}mm\" viewBox=\"{2} {3} {0} {1}\">\n",
                 f(W + 2 * pad), f(D + 2 * pad + 8), f(-W / 2 - pad), f(-D / 2 - pad - 8));
             sb.AppendLine("<style>text{font-family:Arial,sans-serif}</style>");
-            sb.AppendFormat(inv, "<text x=\"{0}\" y=\"{1}\" font-size=\"{7}\" fill=\"#333\">{2}: {3} x {4} cells, {5} mm tall, {6} pocket(s)</text>\n",
-                f(-W / 2), f(-D / 2 - 4), Escape(t.Name), t.UnitsX, t.UnitsY, f(t.TotalHeight), t.Pockets.Count, f(titleSize));
+            sb.AppendFormat(inv, "<text x=\"{0}\" y=\"{1}\" font-size=\"{7}\" fill=\"#333\">{2}: {3} x {4} cells, {5} mm tall, {6} pocket(s){8}</text>\n",
+                f(-W / 2), f(-D / 2 - 4), Escape(t.Name), t.UnitsX, t.UnitsY, f(t.TotalHeight), t.Pockets.Count, f(titleSize),
+                split != null && split.WasSplit ? ", prints as " + split.Pieces.Count + " pieces" : "");
 
             // SVG Y runs down, the tray's Y runs up: flip everything inside this group.
             sb.AppendLine("<g transform=\"scale(1,-1)\">");
@@ -43,20 +47,68 @@ namespace Gridfinity.Core
                             sb.AppendFormat(inv, "<circle cx=\"{0}\" cy=\"{1}\" r=\"{2}\" fill=\"none\" stroke=\"#b88\" stroke-width=\"0.2\"/>\n",
                                 f(c.X + sx * GridfinitySpec.MagnetOffset), f(c.Y + sy * GridfinitySpec.MagnetOffset), f(GridfinitySpec.MagnetDiameter / 2));
 
+            // A split piece shows only its share of the parts that cross its seams.
+            if (t.Piece != null)
+            {
+                double ox = W / 2 + SplitPieceInfo.SeamOvercut, oy = D / 2 + SplitPieceInfo.SeamOvercut;
+                sb.AppendFormat(inv, "<clipPath id=\"piece\"><rect x=\"{0}\" y=\"{1}\" width=\"{2}\" height=\"{3}\"/></clipPath>\n", f(-ox), f(-oy), f(2 * ox), f(2 * oy));
+                sb.AppendLine("<g clip-path=\"url(#piece)\">");
+            }
+            else sb.AppendLine("<g>");
+
+            int mostSteps = t.Pockets.Where(q => PartCuts.IsPart(q) && q.Bottom == PartBottom.Round)
+                                     .Select(q => PartCuts.Layers(q, t).Count).DefaultIfEmpty(1).Max();
             foreach (var p in t.Pockets)
             {
-                sb.AppendFormat(inv, "<path d=\"{0}\" fill=\"#3d6e99\" fill-opacity=\"0.85\" stroke=\"#123\" stroke-width=\"0.25\"/>\n", PathOf(p.BuildLoop(clr), f));
+                bool round = PartCuts.IsPart(p) && p.Bottom == PartBottom.Round;
+                sb.AppendFormat(inv, "<path d=\"{0}\" fill=\"#3d6e99\" fill-opacity=\"{1}\" stroke=\"#123\" stroke-width=\"0.25\"/>\n",
+                    PathOf(p.BuildLoop(clr), f), round ? "0.45" : "0.85");
+                if (round)
+                {
+                    // Round bottoms: each step darkens the pocket a little, so the deepest part shows darkest.
+                    var layers = PartCuts.Layers(p, t);
+                    double op = Math.Min(0.25, 0.9 / Math.Max(1, mostSteps));
+                    foreach (var layer in layers.Skip(1))
+                        sb.AppendFormat(inv, "<path d=\"{0}\" fill=\"#0b2238\" fill-opacity=\"{1}\" fill-rule=\"evenodd\" stroke=\"#123\" stroke-opacity=\"0.25\" stroke-width=\"0.1\"/>\n",
+                            string.Join(" ", layer.Loops.Select(l => PathOf(l, f))), f(op));
+                }
                 foreach (var island in p.BuildIslandLoops(clr))
                     sb.AppendFormat(inv, "<path d=\"{0}\" fill=\"#e9eef3\" stroke=\"#123\" stroke-width=\"0.25\"/>\n", PathOf(island, f));
                 var notch = p.BuildNotchLoop(clr);
                 if (notch != null)
                     sb.AppendFormat(inv, "<path d=\"{0}\" fill=\"#5b8fbd\" stroke=\"#123\" stroke-width=\"0.25\"/>\n", PathOf(notch, f));
             }
+
+            // Centrelines (dashed) through every traced part.
+            if (t.PartCenterlines)
+                foreach (var p in t.Pockets.Where(PartCuts.IsPart))
+                {
+                    Vec2 a, b;
+                    p.GetCenterline(clr, out a, out b);
+                    sb.AppendFormat(inv, "<line x1=\"{0}\" y1=\"{1}\" x2=\"{2}\" y2=\"{3}\" stroke=\"#e08a00\" stroke-width=\"0.3\" stroke-dasharray=\"3 1 0.6 1\"/>\n",
+                        f(a.X), f(a.Y), f(b.X), f(b.Y));
+                }
+
             sb.AppendLine("</g>");
+
+            // Seams where the tray is split for the printer.
+            if (split != null)
+            {
+                foreach (double x in split.SeamsX)
+                    sb.AppendFormat(inv, "<line x1=\"{0}\" y1=\"{1}\" x2=\"{0}\" y2=\"{2}\" stroke=\"#c62828\" stroke-width=\"0.6\" stroke-dasharray=\"4 2\"/>\n", f(x), f(-D / 2 - 2), f(D / 2 + 2));
+                foreach (double y in split.SeamsY)
+                    sb.AppendFormat(inv, "<line x1=\"{0}\" y1=\"{2}\" x2=\"{1}\" y2=\"{2}\" stroke=\"#c62828\" stroke-width=\"0.6\" stroke-dasharray=\"4 2\"/>\n", f(-W / 2 - 2), f(W / 2 + 2), f(y));
+            }
+            sb.AppendLine("</g>");
+
+            // Part names as they will be debossed: beside the part, along its centreline.
+            foreach (var tp in TrayModeler.PartLabels(t))
+                sb.AppendFormat(inv, "<text x=\"{0}\" y=\"{1}\" font-size=\"{2}\" font-weight=\"bold\" fill=\"#a33\" dominant-baseline=\"middle\" transform=\"rotate({3} {0} {1})\">{4}</text>\n",
+                    f(tp.X), f(-tp.Y), f(tp.HeightMm), f(-tp.AngleDeg), Escape(tp.Text));
 
             // Names (unflipped so they read normally) at each pocket centre.
             // A dark box behind each name keeps it readable where it runs past the pocket.
-            foreach (var p in t.Pockets)
+            foreach (var p in t.Pockets.Where(q => !q.HasLabel))
             {
                 double w = 0.56 * 3 * (p.Name ?? "").Length + 1.6;
                 sb.AppendFormat(inv, "<rect x=\"{0}\" y=\"{1}\" width=\"{2}\" height=\"4.2\" rx=\"0.8\" fill=\"#123\" fill-opacity=\"0.85\"/>\n",

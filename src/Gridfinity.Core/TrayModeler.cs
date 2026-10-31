@@ -58,27 +58,38 @@ namespace Gridfinity.Core
                 plan.Features.Add(Cut("Cavity", t.FloorHeight, depth, 0, cavity));
             }
 
-            // 6. Pockets, grouped by depth so every group is one sketch with no overlapping contours.
+            // 6. Pockets and parts, as cut layers grouped by depth so every group is one sketch with no overlapping
+            // contours. A flat pocket is one layer; a round-bottomed part is a stack of steps (see PartCuts).
             double clr = t.DefaultClearance;
-            foreach (var g in t.Pockets.Where(p => p.Shape != PocketShape.Cradle).GroupBy(p => Math.Round(p.Depth, 2)).OrderByDescending(grp => grp.Key))
+            var layers = t.Pockets.Where(p => p.Shape != PocketShape.Cradle).SelectMany(p => PartCuts.Layers(p, t)).ToList();
+            foreach (var g in layers.GroupBy(l => Math.Round(l.Depth, 2)).OrderByDescending(grp => grp.Key))
             {
                 double depth = g.Key;
                 string label = depth.ToString("0.##") + " mm";
                 // Islands (Outline pockets with KeepIslands) are drawn inside their pocket in the same sketch, so
                 // the cut goes around them and leaves them standing.
-                plan.Features.Add(Cut("Pockets " + label, t.PocketTopZ - depth, depth + Overshoot, 0,
-                    g.SelectMany(p => new[] { p.BuildLoop(clr) }.Concat(p.BuildIslandLoops(clr)))));
+                var loops = Clip(t, g.SelectMany(l => l.Loops));
+                if (loops.Count > 0)
+                    plan.Features.Add(Cut("Pockets " + label, t.PocketTopZ - depth, depth + Overshoot, 0, loops));
+            }
 
-                var notches = g.Select(p => p.BuildNotchLoop(clr)).Where(l => l != null).ToList();
+            // Finger notches go as deep as the deepest point of their pocket.
+            foreach (var g in t.Pockets.Where(p => p.Shape != PocketShape.Cradle && p.NotchDiameter > 0)
+                                       .Select(p => new { P = p, D = PartCuts.MaxCutDepth(p, t) })
+                                       .Where(x => x.D > 1e-6)
+                                       .GroupBy(x => Math.Round(x.D, 2)).OrderByDescending(grp => grp.Key))
+            {
+                var notches = Clip(t, g.Select(x => x.P.BuildNotchLoop(clr)).Where(l => l != null));
                 if (notches.Count > 0)
-                    plan.Features.Add(Cut("Finger notches " + label, t.PocketTopZ - depth, depth + Overshoot, 0, notches));
+                    plan.Features.Add(Cut("Finger notches " + g.Key.ToString("0.##") + " mm", t.PocketTopZ - g.Key, g.Key + Overshoot, 0, notches));
             }
 
             // 6a. Round-bottomed cradles: sketched on the Top plane and cut along Y. Cradles with the same Y span share a sketch.
             AddCradles(t, plan, clr);
 
-            // 6b. Debossed labels, one text cut. Optional: if SolidWorks cannot make the text, the tray is still built.
-            if (t.Labels.Count > 0)
+            // 6b. Debossed labels and part names, one text cut. Optional: if SolidWorks cannot make the text, the tray is still built.
+            var partLabels = PartLabels(t);
+            if (t.Labels.Count > 0 || partLabels.Count > 0)
             {
                 var labels = new FeaturePlan
                 {
@@ -90,7 +101,36 @@ namespace Gridfinity.Core
                 };
                 foreach (var l in t.Labels)
                     labels.Texts.Add(new TextPlan { Text = l.Text, X = l.X, Y = l.Y, HeightMm = l.HeightMm, Font = t.LabelFont, Bold = t.LabelBold });
+                labels.Texts.AddRange(partLabels);
                 plan.Features.Add(labels);
+            }
+
+            // 6c. Reference sketch: every part's centreline, the line its name sits on and its outline, on a plane at
+            // the part tops. Nothing is cut; it is there for lining up your own text or features.
+            if (t.PartCenterlines)
+            {
+                var parts = t.Pockets.Where(PartCuts.IsPart).ToList();
+                if (parts.Count > 0)
+                {
+                    var sketch = new FeaturePlan
+                    {
+                        Name = "Part centerlines",
+                        Op = FeatureOp.Sketch,
+                        SketchZ = t.PocketTopZ + t.PartTopOffset,
+                        LoopsAsConstruction = true,
+                        Optional = true
+                    };
+                    foreach (var p in parts)
+                    {
+                        Vec2 a, b;
+                        p.GetCenterline(clr, out a, out b);
+                        if (InClip(t, a, b)) sketch.Lines.Add(new LinePlan { Start = a, End = b, Name = p.Name });
+                        if (p.GetLabelLine(clr, out a, out b) && InClip(t, a, b))
+                            sketch.Lines.Add(new LinePlan { Start = a, End = b, Name = p.Name + " text" });
+                    }
+                    sketch.Loops = Clip(t, parts.Select(p => p.BuildLoop(clr)));
+                    if (sketch.Lines.Count > 0) plan.Features.Add(sketch);
+                }
             }
 
             // 7. Stacking lip: four cuts mirroring the base profile of a bin that would sit on top.
@@ -133,6 +173,66 @@ namespace Gridfinity.Core
             plan.Properties["Description"] = string.Format("Gridfinity {0}x{1}x{2} {3}", t.UnitsX, t.UnitsY, t.HeightUnits, t.Style);
             plan.Properties["PocketCount"] = t.Pockets.Count.ToString();
             return plan;
+        }
+
+        /// <summary>
+        /// Names of the parts as sketch text: centred on the line beside each part, running along it and reading left
+        /// to right. Character height is reduced if the name would be longer than the part.
+        /// </summary>
+        public static List<TextPlan> PartLabels(TrayDefinition t)
+        {
+            var list = new List<TextPlan>();
+            foreach (var p in t.Pockets.Where(q => q.HasLabel))
+            {
+                Vec2 a, b;
+                if (!p.GetLabelLine(t.DefaultClearance, out a, out b)) continue;
+                Vec2 mid = (a + b) * 0.5;
+                if (t.Piece != null && !t.Piece.Contains(mid)) continue; // a split tray puts each name on one piece
+                double len = (b - a).Length;
+                string text = p.LabelText.Trim();
+                double h = p.LabelHeight;
+                double width = EstimateTextWidth(text, h);
+                if (width > len && len > 1) { h = Math.Max(2.5, h * len / width); width = EstimateTextWidth(text, h); }
+                Vec2 dir = len > 1e-9 ? (b - a) * (1.0 / len) : new Vec2(1, 0);
+                Vec2 start = mid - dir * (width / 2);
+                list.Add(new TextPlan
+                {
+                    Text = text,
+                    X = start.X,
+                    Y = start.Y,
+                    AngleDeg = Math.Atan2(dir.Y, dir.X) * 180.0 / Math.PI,
+                    HeightMm = h,
+                    Font = t.LabelFont,
+                    Bold = t.LabelBold
+                });
+            }
+            return list;
+        }
+
+        /// <summary>Same generous width estimate as <see cref="Label.EstimatedWidth"/>.</summary>
+        public static double EstimateTextWidth(string text, double height) { return (text ?? "").Length * height * 0.7; }
+
+        // Split trays: keep only what lies within this piece (plus a little past its seams, so cuts run out cleanly).
+        private static List<Loop> Clip(TrayDefinition t, IEnumerable<Loop> loops)
+        {
+            if (t.Piece == null) return loops.ToList();
+            var result = new List<Loop>();
+            double hx = t.OuterWidth / 2 + SplitPieceInfo.SeamOvercut, hy = t.OuterDepth / 2 + SplitPieceInfo.SeamOvercut;
+            foreach (var loop in loops)
+            {
+                Vec2 lo, hi;
+                loop.GetBounds(out lo, out hi);
+                if (lo.X >= -hx && hi.X <= hx && lo.Y >= -hy && hi.Y <= hy) { result.Add(loop); continue; }
+                if (hi.X <= -hx || lo.X >= hx || hi.Y <= -hy || lo.Y >= hy) continue;
+                foreach (var piece in OutlineGeometry.ClipToRect(loop.ToPolyline(3.0), -hx, -hy, hx, hy))
+                    result.Add(OutlineGeometry.ToLoop(piece));
+            }
+            return result;
+        }
+
+        private static bool InClip(TrayDefinition t, Vec2 a, Vec2 b)
+        {
+            return t.Piece == null || t.Piece.Contains((a + b) * 0.5);
         }
 
         private static void AddCradles(TrayDefinition t, BuildPlan plan, double clr)

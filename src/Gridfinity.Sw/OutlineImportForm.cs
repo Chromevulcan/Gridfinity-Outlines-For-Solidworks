@@ -6,19 +6,27 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Gridfinity.Core;
+using Gridfinity.Trace;
 
 namespace Gridfinity.Sw
 {
     /// <summary>
-    /// Picks outline-app exports (DXF, SVG or the _dxf.zip it makes for several objects), shows the import options and
-    /// a to-scale preview of the laid-out tray, and hands back either a ready tray (menu command) or just the pockets
-    /// (designer "Import outlines...").
+    /// Picks photos of parts on paper (traced here) or outline-app exports (DXF, SVG or the _dxf.zip it makes for
+    /// several objects), shows the import options, the tracing and a to-scale preview of the laid-out tray, and hands
+    /// back either a ready tray (menu command) or just the parts (designer Parts tab and "Import outlines...").
     /// </summary>
     internal sealed class OutlineImportForm : Form
     {
         private readonly ListBox _files = new ListBox { Dock = DockStyle.Fill, IntegralHeight = false, HorizontalScrollbar = true };
         private readonly PropertyGrid _grid = new PropertyGrid { Dock = DockStyle.Fill, PropertySort = PropertySort.Categorized, ToolbarVisible = false };
         private readonly Panel _preview = new DoubleBufferedPanel { Dock = DockStyle.Fill, BackColor = Color.White };
+        private readonly PictureBox _tracing = new PictureBox { Dock = DockStyle.Fill, SizeMode = PictureBoxSizeMode.Zoom, BackColor = Color.White };
+        private readonly TabControl _views = new TabControl { Dock = DockStyle.Fill };
+        private SplitResult _split;
+
+        // Tracing a photo takes a moment, so results are kept until the file or the photo options change.
+        private readonly Dictionary<string, Tuple<List<TracedShape>, string, List<string>>> _traced =
+            new Dictionary<string, Tuple<List<TracedShape>, string, List<string>>>(StringComparer.OrdinalIgnoreCase);
         private readonly TextBox _notes = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical };
         private readonly TextBox _name = new TextBox { Width = 220 };
         private readonly Button _ok;
@@ -39,7 +47,7 @@ namespace Gridfinity.Sw
             _addToDesigner = addToDesigner;
             if (_lastOptions != null) Options = Copy(_lastOptions);
 
-            Text = addToDesigner ? "Import outlines into the tray" : "Build tray from outlines";
+            Text = addToDesigner ? "Import parts into the tray" : "Build tray from photos or outlines";
             StartPosition = FormStartPosition.CenterParent;
             Width = 1000;
             Height = 720;
@@ -54,7 +62,7 @@ namespace Gridfinity.Sw
             fileButtons.Controls.Add(MakeButton("Add files...", delegate { AddFiles(); }));
             fileButtons.Controls.Add(MakeButton("Remove", delegate { RemoveSelected(); }));
             fileButtons.Controls.Add(MakeButton("Clear", delegate { _files.Items.Clear(); Recalculate(); }));
-            var fileBox = new GroupBox { Text = "outline-app exports (.dxf, .svg, _dxf.zip)", Dock = DockStyle.Fill };
+            var fileBox = new GroupBox { Text = "Photos of parts on paper, or outline-app exports (.dxf, .svg, _dxf.zip)", Dock = DockStyle.Fill };
             fileBox.Controls.Add(_files);
             fileBox.Controls.Add(fileButtons);
             left.Panel1.Controls.Add(fileBox);
@@ -64,9 +72,14 @@ namespace Gridfinity.Sw
             left.Panel2.Controls.Add(optionBox);
             split.Panel1.Controls.Add(left);
 
-            var previewBox = new GroupBox { Text = "Preview (top view, to scale)", Dock = DockStyle.Fill };
-            previewBox.Controls.Add(_preview);
-            right.Panel1.Controls.Add(previewBox);
+            var trayPage = new TabPage("Tray (top view, to scale)");
+            trayPage.Controls.Add(_preview);
+            var tracePage = new TabPage("Tracing of the selected photo");
+            tracePage.Controls.Add(_tracing);
+            _views.TabPages.Add(trayPage);
+            _views.TabPages.Add(tracePage);
+            right.Panel1.Controls.Add(_views);
+            _files.SelectedIndexChanged += delegate { ShowTracing(); };
             var notesBox = new GroupBox { Text = "Notes", Dock = DockStyle.Fill };
             notesBox.Controls.Add(_notes);
             right.Panel2.Controls.Add(notesBox);
@@ -79,7 +92,7 @@ namespace Gridfinity.Sw
                 bottom.Controls.Add(_name);
                 _name.TextChanged += delegate { Recalculate(); };
             }
-            _ok = MakeButton(addToDesigner ? "Add pockets" : "Build tray", delegate { DialogResult = DialogResult.OK; });
+            _ok = MakeButton(addToDesigner ? "Add parts" : "Build tray", delegate { DialogResult = DialogResult.OK; });
             bottom.Controls.Add(_ok);
             bottom.Controls.Add(MakeButton("Cancel", delegate { DialogResult = DialogResult.Cancel; }));
             CancelButton = (Button)bottom.Controls[bottom.Controls.Count - 1];
@@ -162,8 +175,8 @@ namespace Gridfinity.Sw
         {
             using (var dlg = new OpenFileDialog
             {
-                Title = "Choose outline-app exports",
-                Filter = OutlineImporter.FileFilter,
+                Title = "Choose photos of parts on paper, or outline-app exports",
+                Filter = ShapeSources.FileFilter,
                 Multiselect = true,
                 InitialDirectory = _lastFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads"
             })
@@ -203,7 +216,7 @@ namespace Gridfinity.Sw
                 var shapes = new List<TracedShape>();
                 foreach (var item in _files.Items)
                 {
-                    try { shapes.AddRange(OutlineImporter.ReadFile(item.ToString(), notes)); }
+                    try { shapes.AddRange(Read(item.ToString(), notes)); }
                     catch (Exception ex) { notes.Add(Path.GetFileName(item.ToString()) + ": " + ex.Message); }
                 }
 
@@ -216,6 +229,15 @@ namespace Gridfinity.Sw
                     CompileResult c = OutlineImporter.Resolve(tray, Options.NameLabels);
                     _resolved = c.Resolved;
                     _ready = c.Success;
+                    _split = null;
+                    if (c.Success)
+                    {
+                        var fixedTray = _resolved.Clone();
+                        fixedTray.AutoLayout = false;
+                        fixedTray.AutoGrowGrid = false;
+                        _split = TraySplitter.Split(fixedTray);
+                        notes.AddRange(_split.Notes);
+                    }
                     notes.Add("");
                     notes.Add(string.Format("Tray: {0} x {1} cells ({2:0.#} x {3:0.#} mm), {4} height units ({5:0.#} mm).",
                         _resolved.UnitsX, _resolved.UnitsY, _resolved.OuterWidth, _resolved.OuterDepth, _resolved.HeightUnits, _resolved.TotalHeight));
@@ -235,80 +257,64 @@ namespace Gridfinity.Sw
             _notes.Text = string.Join(Environment.NewLine, notes);
             _ok.Enabled = _addToDesigner ? _pockets.Count > 0 : _ready;
             _preview.Invalidate();
+            ShowTracing();
+        }
+
+        private static string PhotoKey(string path, OutlineImportOptions o)
+        {
+            return string.Join("|", path, File.Exists(path) ? File.GetLastWriteTimeUtc(path).Ticks : 0, o.Paper, o.PaperWidth, o.PaperHeight,
+                               o.PhotoMode, o.ScanDpi, o.Sensitivity, o.PaperBorder, o.PixelsPerMm);
+        }
+
+        private List<TracedShape> Read(string path, List<string> notes)
+        {
+            if (!PhotoTracer.IsImage(path)) return OutlineImporter.ReadFile(path, notes);
+            string key = PhotoKey(path, Options);
+            Tuple<List<TracedShape>, string, List<string>> hit;
+            if (!_traced.TryGetValue(key, out hit))
+            {
+                var traceNotes = new List<string>();
+                Cursor = Cursors.WaitCursor;
+                try
+                {
+                    string overlay;
+                    var shapes = ShapeSources.Read(path, Options, traceNotes, out overlay);
+                    hit = Tuple.Create(shapes, overlay, traceNotes);
+                }
+                finally { Cursor = Cursors.Default; }
+                foreach (var old in _traced.Keys.Where(k => k.StartsWith(path + "|", StringComparison.OrdinalIgnoreCase)).ToList()) _traced.Remove(old);
+                _traced[key] = hit;
+            }
+            notes.AddRange(hit.Item3);
+            // Hand out copies: the importer turns and simplifies the shapes it is given.
+            return hit.Item1.Select(x => new TracedShape
+            {
+                Name = x.Name, Source = x.Source, Outline = new List<Vec2>(x.Outline),
+                Holes = x.Holes.Select(h => new List<Vec2>(h)).ToList()
+            }).ToList();
+        }
+
+        private void ShowTracing()
+        {
+            string path = _files.SelectedItem as string ?? _files.Items.Cast<object>().Select(o => o.ToString()).FirstOrDefault(PhotoTracer.IsImage);
+            Tuple<List<TracedShape>, string, List<string>> hit;
+            string overlay = path != null && _traced.TryGetValue(PhotoKey(path, Options), out hit) ? hit.Item2 : null;
+            var old = _tracing.Image;
+            _tracing.Image = null;
+            if (old != null) old.Dispose();
+            if (overlay != null && File.Exists(overlay))
+            {
+                // Load without locking the file, so it can be overwritten by the next tracing.
+                using (var stream = new MemoryStream(File.ReadAllBytes(overlay))) _tracing.Image = Image.FromStream(stream);
+            }
         }
 
         // ---- Preview -----------------------------------------------------------------------------
 
         private void OnPaintPreview(object sender, PaintEventArgs e)
         {
-            Graphics g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            TrayDefinition t = _resolved;
-            if (t == null)
-            {
-                g.DrawString(_files.Items.Count == 0 ? "Add outline-app exports to see the tray." : "Nothing to show yet.",
-                             Font, Brushes.Gray, 10, 10);
-                return;
-            }
-
-            double W = t.OuterWidth, D = t.OuterDepth, pad = 8;
-            float scale = (float)Math.Min((_preview.Width - 2 * pad) / W, (_preview.Height - 2 * pad) / D);
-            if (scale <= 0) return;
-
-            // Tray coordinates are centred with Y up; the panel's Y runs down.
-            var state = g.Save();
-            g.TranslateTransform(_preview.Width / 2f, _preview.Height / 2f);
-            g.ScaleTransform(scale, -scale);
-
-            using (var outline = new Pen(Color.FromArgb(68, 85, 102), 1.2f / scale))
-            using (var thin = new Pen(Color.FromArgb(153, 170, 187), 0.8f / scale) { DashStyle = DashStyle.Dash })
-            using (var magnet = new Pen(Color.FromArgb(187, 136, 136), 0.8f / scale))
-            using (var edge = new Pen(Color.FromArgb(17, 34, 51), 0.8f / scale))
-            using (var binFill = new SolidBrush(Color.FromArgb(233, 238, 243)))
-            using (var pocketFill = new SolidBrush(Color.FromArgb(61, 110, 153)))
-            using (var notchFill = new SolidBrush(Color.FromArgb(91, 143, 189)))
-            {
-                var bin = new RectangleF((float)(-W / 2), (float)(-D / 2), (float)W, (float)D);
-                g.FillRectangle(binFill, bin);
-                g.DrawRectangle(outline, bin.X, bin.Y, bin.Width, bin.Height);
-
-                foreach (var c in TrayModeler.CellCenters(t))
-                {
-                    g.DrawRectangle(thin, (float)(c.X - 18.6), (float)(c.Y - 18.6), 37.2f, 37.2f);
-                    if (!t.MagnetHoles) continue;
-                    float r = (float)(GridfinitySpec.MagnetDiameter / 2);
-                    foreach (int sx in new[] { -1, 1 })
-                        foreach (int sy in new[] { -1, 1 })
-                            g.DrawEllipse(magnet, (float)(c.X + sx * GridfinitySpec.MagnetOffset) - r, (float)(c.Y + sy * GridfinitySpec.MagnetOffset) - r, 2 * r, 2 * r);
-                }
-
-                double clr = t.DefaultClearance;
-                foreach (var p in t.Pockets)
-                {
-                    FillLoop(g, p.BuildLoop(clr), pocketFill, edge);
-                    foreach (var island in p.BuildIslandLoops(clr)) FillLoop(g, island, binFill, edge);
-                    var notch = p.BuildNotchLoop(clr);
-                    if (notch != null) FillLoop(g, notch, notchFill, edge);
-                }
-            }
-            g.Restore(state);
-
-            // Pocket and label text, drawn unflipped.
-            using (var small = new Font(Font.FontFamily, 8f))
-            {
-                Func<double, double, PointF> toScreen = (x, y) => new PointF(_preview.Width / 2f + (float)x * scale, _preview.Height / 2f - (float)y * scale);
-                var centre = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-                foreach (var p in t.Pockets) g.DrawString(p.Name, small, Brushes.White, toScreen(p.X, p.Y), centre);
-                foreach (var l in t.Labels) g.DrawString(l.Text, small, Brushes.DarkRed, toScreen(l.X, l.Y + l.HeightMm / 2));
-            }
-        }
-
-        private static void FillLoop(Graphics g, Loop loop, Brush fill, Pen edge)
-        {
-            var pts = loop.ToPolyline(4.0).Select(v => new PointF((float)v.X, (float)v.Y)).ToArray();
-            if (pts.Length < 3) return;
-            g.FillPolygon(fill, pts);
-            g.DrawPolygon(edge, pts);
+            PreviewPainter.Paint(e.Graphics, _preview, _resolved, _split, null,
+                _files.Items.Count == 0 ? "Add photos or outline-app exports to see the tray." : "Nothing to show yet.");
         }
 
         // ---- Helpers -----------------------------------------------------------------------------
@@ -340,9 +346,5 @@ namespace Gridfinity.Sw
             return b;
         }
 
-        private sealed class DoubleBufferedPanel : Panel
-        {
-            public DoubleBufferedPanel() { DoubleBuffered = true; ResizeRedraw = true; }
-        }
     }
 }

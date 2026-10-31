@@ -112,7 +112,9 @@ namespace Gridfinity.Core
                 { r.Error(who + "Height must be positive."); geometryOk = false; }
                 if (p.Shape == PocketShape.Polygon && (p.Points == null || p.Points.Count < 3))
                 { r.Error(who + "Polygon needs at least 3 Points."); geometryOk = false; }
-                if (p.Depth <= 0) r.Error(who + "Depth must be positive.");
+                bool round = p.Shape == PocketShape.Outline && p.Bottom == PartBottom.Round;
+                if (p.Depth <= 0 && !round) r.Error(who + "Depth must be positive.");
+                if (round && t.RoundStep < 0.1) r.Warn("RoundStep under 0.1 mm makes a great many cut features.");
 
                 if (p.Shape == PocketShape.Cradle)
                 {
@@ -122,13 +124,17 @@ namespace Gridfinity.Core
                     if (p.NotchDiameter > 0) r.Warn(who + "finger notches are ignored on a Cradle.");
                 }
 
-                double bottom = t.PocketTopZ - p.Depth;
+                double cut = geometryOk ? PartCuts.MaxCutDepth(p, t) : p.Depth;
+                if (PartCuts.IsPart(p) && geometryOk && cut <= 1e-6)
+                    r.Warn(who + "sits entirely above the tray surface (Y offset " + PartCuts.TopOffsetFor(p, t).ToString("0.##") +
+                           " mm" + (round ? "" : ", thickness " + p.Depth.ToString("0.##") + " mm") + "), so nothing is cut.");
+                double bottom = t.PocketTopZ - cut;
                 // In a solid block the Gridfinity feet narrow below Z = 4.75 mm, so a deeper pocket would cut through the sides.
                 double minBottom = t.Style == TrayStyle.SolidBlock
                     ? Math.Max(t.MinFloorBelowPocket, GridfinitySpec.BaseHeight + t.MinFloorBelowPocket)
                     : t.MinFloorBelowPocket;
                 if (bottom < minBottom)
-                    r.Error(who + "depth " + p.Depth + " mm reaches " + bottom.ToString("0.##") + " mm above the tray base; the lowest allowed is " + minBottom.ToString("0.##") + " mm" + (t.Style == TrayStyle.SolidBlock ? " (the " + GridfinitySpec.BaseHeight + " mm base feet plus " + t.MinFloorBelowPocket + " mm of floor)." : "."));
+                    r.Error(who + "depth " + cut.ToString("0.##") + " mm reaches " + bottom.ToString("0.##") + " mm above the tray base; the lowest allowed is " + minBottom.ToString("0.##") + " mm" + (t.Style == TrayStyle.SolidBlock ? " (the " + GridfinitySpec.BaseHeight + " mm base feet plus " + t.MinFloorBelowPocket + " mm of floor)." : "."));
                 else if (t.MagnetHoles && bottom < GridfinitySpec.MagnetDepth + MinWeb)
                     r.Warn(who + "may break into the magnet pockets underneath.");
 
@@ -153,7 +159,8 @@ namespace Gridfinity.Core
                     hi = new Vec2(Math.Max(hi.X, nhi.X), Math.Max(hi.Y, nhi.Y));
                 }
 
-                if (lo.X < -halfW - 1e-6 || hi.X > halfW + 1e-6 || lo.Y < -halfD - 1e-6 || hi.Y > halfD + 1e-6)
+                // A split piece's parts may run past its edges into the next piece.
+                if (t.Piece == null && (lo.X < -halfW - 1e-6 || hi.X > halfW + 1e-6 || lo.Y < -halfD - 1e-6 || hi.Y > halfD + 1e-6))
                     r.Error(who + "extends beyond the usable area (X " + lo.X.ToString("0.#") + " to " + hi.X.ToString("0.#") +
                             ", Y " + lo.Y.ToString("0.#") + " to " + hi.Y.ToString("0.#") + "; limit +/-" + halfW.ToString("0.#") + " x +/-" + halfD.ToString("0.#") + ").");
 
@@ -182,6 +189,39 @@ namespace Gridfinity.Core
             }
 
             ValidateLabels(t, r, boxes, halfW, halfD);
+            ValidatePartLabels(t, r, halfW, halfD);
+            if (t.Piece != null)
+                foreach (var p in t.Pockets.Where(q => q.Shape == PocketShape.Cradle))
+                {
+                    Vec2 lo, hi;
+                    p.BuildLoop(t.DefaultClearance).GetBounds(out lo, out hi);
+                    if (lo.X < -halfW || hi.X > halfW || lo.Y < -halfD || hi.Y > halfD)
+                        r.Error("Cradle '" + p.Name + "' crosses a seam of the split tray; cradles cannot be split.");
+                }
+        }
+
+        private static void ValidatePartLabels(TrayDefinition t, ValidationReport r, double halfW, double halfD)
+        {
+            var named = t.Pockets.Where(p => p.HasLabel).ToList();
+            if (named.Count == 0) return;
+            if (t.LabelDepth <= 0) { r.Error("LabelDepth must be positive."); return; }
+            if (t.PocketTopZ - t.LabelDepth < t.MinFloorBelowPocket)
+                r.Error("LabelDepth " + t.LabelDepth + " mm leaves too little material under the part names.");
+            foreach (var p in named)
+            {
+                string who = "Name '" + p.LabelText + "' of '" + p.Name + "': ";
+                if (p.LabelHeight < 3) r.Warn(who + "text under 3 mm high is hard to print.");
+                Vec2 a, b;
+                if (!p.GetLabelLine(t.DefaultClearance, out a, out b)) continue;
+                double len = (b - a).Length, width = TrayModeler.EstimateTextWidth(p.LabelText.Trim(), p.LabelHeight);
+                if (width > len) r.Warn(who + "is longer than the part (about " + width.ToString("0") + " mm against " + len.ToString("0") + " mm), so it is made smaller.");
+                if (t.Piece == null)
+                {
+                    var band = p.BuildLabelBand(t.DefaultClearance);
+                    if (band != null && band.Any(q => q.X < -halfW || q.X > halfW || q.Y < -halfD || q.Y > halfD))
+                        r.Warn(who + "may run past the edge of the usable area.");
+                }
+            }
         }
 
         // Label widths are estimates, so problems here are warnings, not errors.

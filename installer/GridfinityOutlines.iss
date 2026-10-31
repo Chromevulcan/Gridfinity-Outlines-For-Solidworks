@@ -10,7 +10,7 @@
 ;      (they are not bundled), and registers the add-in with SolidWorks.
 
 #define AppName "Gridfinity Outlines for SolidWorks"
-#define AppVersion "1.2.0"
+#define AppVersion "1.3.0"
 #define BuildDir "..\src\Gridfinity.Sw\bin\Release\net48"
 
 [Setup]
@@ -36,7 +36,8 @@ UninstallDisplayName={#AppName}
 WelcomeLabel2=This installs the Gridfinity tray, baseplate and clip builder as a SolidWorks add-in.%n%nPlease close SolidWorks before continuing. After installing, start SolidWorks and look for Tools > Gridfinity Outlines (if it is missing, tick Gridfinity Outlines under Tools > Add-Ins).%n%nIt can be installed next to the original Gridfinity for SolidWorks add-in.
 
 [Files]
-; The add-in and the libraries it carries. The SolidWorks interop DLLs are copied from your SolidWorks install instead.
+; The add-in and the libraries it carries (including dll\x64\OpenCvSharpExtern.dll for the photo tracer).
+; The SolidWorks interop DLLs are copied from your SolidWorks install instead.
 Source: "{#BuildDir}\*"; DestDir: "{app}"; Excludes: "*.pdb,*.xml,SolidWorks.Interop.*.dll"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\samples\*"; DestDir: "{app}\samples"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\trays\*"; DestDir: "{app}\trays"; Flags: ignoreversion

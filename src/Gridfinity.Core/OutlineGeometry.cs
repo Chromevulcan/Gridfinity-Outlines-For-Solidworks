@@ -69,6 +69,17 @@ namespace Gridfinity.Core
             return best ?? new List<Vec2>(points);
         }
 
+        /// <summary>
+        /// The parts of a closed outline inside an axis-aligned rectangle (a polygon with holes comes back as its
+        /// outer edges and its holes; the caller draws them in one sketch).
+        /// </summary>
+        public static List<List<Vec2>> ClipToRect(IList<Vec2> points, double x0, double y0, double x1, double y1)
+        {
+            var rect = new RectD(x0, y0, x1, y1);
+            PathsD output = Clipper.RectClip(rect, new PathsD { ToPath(points) }, Precision);
+            return output.Where(p => p.Count >= 3 && Math.Abs(Clipper.Area(p)) > 0.01).Select(FromPath).ToList();
+        }
+
         /// <summary>A closed loop of straight segments through the points (made counter-clockwise).</summary>
         public static Loop ToLoop(IList<Vec2> points)
         {

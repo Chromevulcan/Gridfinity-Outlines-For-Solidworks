@@ -2,7 +2,16 @@ using System.Collections.Generic;
 
 namespace Gridfinity.Core
 {
-    public enum FeatureOp { Boss, Cut }
+    /// <summary>Boss and Cut extrude a sketch; Sketch only draws one (reference geometry such as part centrelines).</summary>
+    public enum FeatureOp { Boss, Cut, Sketch }
+
+    /// <summary>A straight sketch line, drawn as construction geometry (a centreline).</summary>
+    public sealed class LinePlan
+    {
+        public Vec2 Start;
+        public Vec2 End;
+        public string Name;
+    }
 
     /// <summary>
     /// Which plane a feature's sketch lives on. Front: loops are (X, Y), the feature spans Z = StartZ .. StartZ + Depth.
@@ -35,6 +44,18 @@ namespace Gridfinity.Core
         /// <summary>Text to cut into the sketch alongside any loops (labels).</summary>
         public List<TextPlan> Texts = new List<TextPlan>();
 
+        /// <summary>Construction lines (centrelines), drawn in the same sketch.</summary>
+        public List<LinePlan> Lines = new List<LinePlan>();
+
+        /// <summary>
+        /// Sketch features only: put the sketch on a plane parallel to the Front plane at this height (mm) rather than on
+        /// the Front plane itself. Falls back to the Front plane if the plane cannot be made.
+        /// </summary>
+        public double SketchZ;
+
+        /// <summary>Sketch features only: draw <see cref="Loops"/> as construction geometry too.</summary>
+        public bool LoopsAsConstruction;
+
         /// <summary>
         /// When true, a failure building this feature is reported as a warning and the build carries on.
         /// Used for labels, so a text problem never costs you the whole tray.
@@ -42,12 +63,16 @@ namespace Gridfinity.Core
         public bool Optional;
     }
 
-    /// <summary>One line of sketch text. X is the left end of the text, Y the vertical centre of the capitals.</summary>
+    /// <summary>
+    /// One line of sketch text. X is the left end of the text, Y the vertical centre of the capitals; with an angle the
+    /// text runs from (X, Y) in that direction (anticlockwise from +X), still centred on the line through that point.
+    /// </summary>
     public sealed class TextPlan
     {
         public string Text;
         public double X;
         public double Y;
+        public double AngleDeg;
         public double HeightMm;
         public string Font;
         public bool Bold;

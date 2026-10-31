@@ -31,6 +31,9 @@ namespace Gridfinity.Sw
 
         public ValidationReport Validation;
         public List<string> Warnings = new List<string>();
+
+        /// <summary>When the tray was split to fit the printer: one result per piece (Model is then the last piece).</summary>
+        public List<SwBuildResult> Pieces = new List<SwBuildResult>();
     }
 
     /// <summary>
@@ -51,11 +54,48 @@ namespace Gridfinity.Sw
             _app = app;
         }
 
-        /// <summary>Builds a box (tray or part holder, including its cutouts and labels).</summary>
+        /// <summary>
+        /// Builds a box (tray or part holder, including its cutouts and labels). A tray larger than its printer's bed
+        /// (TrayDefinition.Printer, SplitToFitPrinter) is built as several parts, one per piece, each a whole
+        /// Gridfinity bin; parts that cross a seam are cut through the side of both pieces.
+        /// </summary>
         public SwBuildResult Build(TrayDefinition definition, SwBuildOptions options = null)
         {
             CompileResult compiled = TrayCompiler.Compile(definition);
-            return Run(compiled.Plan, compiled.Report, "The tray definition has errors:\n", options);
+            if (!compiled.Success || compiled.Resolved == null)
+                return Run(compiled.Plan, compiled.Report, "The tray definition has errors:\n", options);
+
+            var whole = compiled.Resolved.Clone();
+            whole.AutoLayout = false;
+            whole.AutoGrowGrid = false;
+            SplitResult split = TraySplitter.Split(whole);
+            if (!split.WasSplit)
+                return Run(compiled.Plan, compiled.Report, "The tray definition has errors:\n", options);
+
+            var summary = new SwBuildResult { Validation = compiled.Report, Success = true };
+            summary.Warnings.AddRange(split.Notes);
+            var lines = new List<string>();
+            foreach (TrayDefinition piece in split.Pieces)
+            {
+                CompileResult pc = TrayCompiler.Compile(piece);
+                var pieceOptions = new SwBuildOptions
+                {
+                    PartTemplatePath = options == null ? null : options.PartTemplatePath,
+                    RunDirectionProbe = options == null || options.RunDirectionProbe,
+                    ZoomToFit = options == null || options.ZoomToFit,
+                    SaveAsPath = options == null || string.IsNullOrEmpty(options.SaveAsPath) ? null
+                        : Path.Combine(Path.GetDirectoryName(options.SaveAsPath) ?? "",
+                                       Path.GetFileNameWithoutExtension(options.SaveAsPath) + "_" + piece.Piece.Label + Path.GetExtension(options.SaveAsPath))
+                };
+                SwBuildResult r = Run(pc.Plan, pc.Report, "Piece " + piece.Piece.Label + " has errors:\n", pieceOptions);
+                summary.Pieces.Add(r);
+                summary.Model = r.Model ?? summary.Model;
+                summary.Success &= r.Success;
+                foreach (string w in r.Warnings) summary.Warnings.Add(piece.Piece.Label + ": " + w);
+                lines.Add(piece.Name + " (" + piece.UnitsX + " x " + piece.UnitsY + "): " + r.Message);
+            }
+            summary.Message = "Split into " + split.Pieces.Count + " pieces to fit the " + whole.Printer + ":\n" + string.Join("\n", lines.ToArray());
+            return summary;
         }
 
         /// <summary>Builds a baseplate.</summary>
@@ -128,6 +168,7 @@ namespace Gridfinity.Sw
                     }
                     double after = FeatureExecutor.Volume(model);
 
+                    if (fp.Op == FeatureOp.Sketch) continue;
                     if (fp.Op == FeatureOp.Cut && before - after < 1e-12)
                         result.Warnings.Add("Feature '" + fp.Name + "' removed no material; it may have cut the wrong way or missed the part.");
                     if (fp.Op == FeatureOp.Boss && after - before < 1e-12 && fp.Name != "Body")

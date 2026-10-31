@@ -8,11 +8,14 @@ using SolidWorks.Interop.sldworks;
 namespace Gridfinity.Sw
 {
     /// <summary>
-    /// The designer window. Three tabs:
+    /// The designer window. Five tabs:
     ///   Box       - the bin itself: grid size, height, style, lip, magnets, walls and compartments.
     ///   Baseplate - a baseplate for bins to sit on.
-    ///   Cutout    - what is cut into the box: pockets (the part shapes), their layout, and labels.
-    /// Box and Cutout edit the same tray definition; "Build" on either tab builds the box with its cutouts.
+    ///   Cutout    - what is cut into the box: pockets, their layout, and labels.
+    ///   Clips     - baseplate clips.
+    ///   Parts     - import a photo of parts (or outline-app exports) and lay them onto the box as cutouts, with flat or
+    ///               round bottoms, a Y offset, centrelines and names, split to fit the printer.
+    /// Box, Cutout and Parts edit the same tray definition; "Build" on any of them builds the box with its cutouts.
     /// </summary>
     internal sealed class TrayDesignerForm : Form
     {
@@ -29,8 +32,9 @@ namespace Gridfinity.Sw
         private readonly Button _layoutButton;
         private readonly Button _importButton;
         private readonly Button _buildButton;
+        private readonly PartsTab _partsTab;
 
-        private const int BoxTab = 0, BaseplateTab = 1, CutoutTab = 2, ClipsTab = 3;
+        private const int BoxTab = 0, BaseplateTab = 1, CutoutTab = 2, ClipsTab = 3, PartsTabIndex = 4;
 
         public TrayDesignerForm(ISldWorks app)
         {
@@ -40,20 +44,26 @@ namespace Gridfinity.Sw
 
             Text = "Gridfinity Outlines";
             StartPosition = FormStartPosition.CenterScreen;
-            Width = 580;
-            Height = 760;
+            Width = 900;
+            Height = 780;
 
             _tabs.Dock = DockStyle.Fill;
             _tabs.TabPages.Add(MakePage("Box", _boxGrid));
             _tabs.TabPages.Add(MakePage("Baseplate", _plateGrid));
             _tabs.TabPages.Add(MakePage("Cutout", _cutoutGrid));
             _tabs.TabPages.Add(MakePage("Clips", _clipGrid));
-            _tabs.SelectedIndexChanged += delegate { UpdateButtons(); };
+            _partsTab = new PartsTab(() => _tray, RefreshGrids);
+            _tabs.TabPages.Add(MakePage("Parts", _partsTab));
+            _tabs.SelectedIndexChanged += delegate
+            {
+                UpdateButtons();
+                if (_tabs.SelectedIndex == PartsTabIndex) _partsTab.Rebind();
+            };
 
             var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 44, Padding = new Padding(6) };
             buttons.Controls.Add(MakeButton("Open JSON...", OnOpen));
             buttons.Controls.Add(MakeButton("Save JSON...", OnSave));
-            _importButton = MakeButton("Import outlines...", OnImportOutlines);
+            _importButton = MakeButton("Import parts...", OnImportOutlines);
             buttons.Controls.Add(_importButton);
             _layoutButton = MakeButton("Auto-layout", OnLayout);
             buttons.Controls.Add(_layoutButton);
@@ -103,6 +113,7 @@ namespace Gridfinity.Sw
             _cutoutGrid.SelectedObject = new CategoryView(_tray, "Pockets", "Layout", "Labels");
             _plateGrid.SelectedObject = _plate;
             _clipGrid.SelectedObject = _clips;
+            if (_partsTab != null) _partsTab.Rebind();
         }
 
         private void UpdateButtons()
@@ -164,7 +175,7 @@ namespace Gridfinity.Sw
             }
         }
 
-        // Adds pockets traced in outline-app (DXF/SVG exports) to this tray and lays everything out again.
+        // Adds parts traced from a photo or outline-app exports to this tray and lays everything out again.
         private void OnImportOutlines(object sender, EventArgs e)
         {
             List<Pocket> pockets;
@@ -178,12 +189,13 @@ namespace Gridfinity.Sw
             _tray.AutoGrowGrid = true;
             _tray.MaxUnitsX = Math.Max(_tray.MaxUnitsX, o.MaxUnitsX);
             _tray.MaxUnitsY = Math.Max(_tray.MaxUnitsY, o.MaxUnitsY);
-            _tray.HeightUnits = Math.Max(_tray.HeightUnits, OutlineImporter.HeightUnitsFor(_tray, o.Depth));
+            if (_tray.Pockets.Count == pockets.Count) { _tray.PartTopOffset = o.TopOffset; _tray.Printer = o.Printer; }
 
             LayoutResult r = TrayPlanner.SuggestGrid(_tray) ? TrayPlanner.AutoLayout(_tray) : new LayoutResult();
+            OutlineImporter.FitHeight(_tray, true);
             BindGrids();
             RefreshGrids();
-            _tabs.SelectedIndex = CutoutTab;
+            _tabs.SelectedIndex = PartsTabIndex;
 
             string msg = "Added " + pockets.Count + " pocket(s). Tray is now " + _tray.UnitsX + " x " + _tray.UnitsY +
                          " cells, " + _tray.HeightUnits + " height units.";
