@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="95.5mm" height="187.5mm" viewBox="-47.75 -97.75 95.5 187.5">
+<style>text{font-family:Arial,sans-serif}</style>
+<text x="-41.75" y="-87.75" font-size="2.5" fill="#333">with_card: 2 x 4 cells, 21 mm tall, 2 pocket(s)</text>
+<g transform="scale(1,-1)">
+<rect x="-41.75" y="-83.75" width="83.5" height="167.5" rx="3.75" fill="#e9eef3" stroke="#456" stroke-width="0.4"/>
+<rect x="-39.6" y="-81.6" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<rect x="-39.6" y="-39.6" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<rect x="-39.6" y="2.4" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<rect x="-39.6" y="44.4" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<rect x="2.4" y="-81.6" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<rect x="2.4" y="-39.6" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<rect x="2.4" y="2.4" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<rect x="2.4" y="44.4" width="37.2" height="37.2" rx="1.6" fill="none" stroke="#9ab" stroke-width="0.2" stroke-dasharray="1 1"/>
+<circle cx="-34" cy="-76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-34" cy="-50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="-76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="-50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-34" cy="-34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-34" cy="-8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="-34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="-8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-34" cy="8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-34" cy="34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-34" cy="50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-34" cy="76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="-8" cy="76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="-76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="-50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="-76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="-50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="-34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="-8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="-34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="-8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="8" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="34" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="8" cy="76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="50" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<circle cx="34" cy="76" r="3.25" fill="none" stroke="#b88" stroke-width="0.2"/>
+<g>
+<path d="M-16.094 80.098 L-16.107 80.122 L-16.227 80.332 L-16.456 80.573 L-16.77 80.682 L-16.835 80.685 L-36.575 80.685 L-36.898 80.606 L-37.148 80.387 L-37.183 80.332 L-37.303 80.122 L-37.394 79.803 L-37.395 79.775 L-37.395 -79.645 L-37.316 -79.968 L-37.291 -80.013 L-37.081 -80.353 L-36.844 -80.586 L-36.526 -80.684 L-36.485 -80.685 L-16.925 -80.685 L-16.602 -80.606 L-16.352 -80.387 L-16.329 -80.353 L-16.119 -80.013 L-16.017 -79.697 L-16.015 -79.645 L-16.015 79.775 Z" fill="#3d6e99" fill-opacity="0.85" stroke="#123" stroke-width="0.25"/>
+<path d="M31.116 2.858 L31.065 2.941 L31.065 3.415 L30.986 3.738 L30.967 3.773 L30.794 4.063 L30.691 4.983 L30.66 5.124 L30.04 7.004 L30.001 7.099 L28.121 10.849 L28.056 10.954 L26.936 12.454 L26.76 12.62 L26.514 12.781 L26.226 13.264 L26.12 13.4 L25.03 14.49 L24.897 14.594 L24.481 14.845 L24.426 14.967 L24.273 15.111 L21.433 17.071 L21.348 17.121 L19.348 18.121 L19.103 18.192 L18.839 18.217 L18.377 18.476 L18.189 18.548 L17.018 18.811 L16.791 18.956 L16.514 19.058 L14.618 19.327 L14.403 19.461 L14.087 19.563 L14.035 19.565 L9.345 19.565 L9.022 19.486 L8.993 19.47 L8.683 19.29 L7 19.058 L6.743 18.97 L6.436 18.791 L5.636 18.689 L5.429 18.629 L1.679 16.879 L1.555 16.805 L-1.445 14.555 L-1.536 14.474 L-3.496 12.384 L-3.562 12.302 L-5.192 9.932 L-5.246 9.837 L-6.746 6.707 L-6.801 6.546 L-7.066 5.257 L-7.211 5.023 L-7.307 4.76 L-7.582 2.947 L-7.752 2.576 L-7.815 2.285 L-7.815 -2.285 L-7.736 -2.608 L-7.72 -2.637 L-7.547 -2.935 L-7.432 -4.104 L-7.41 -4.221 L-6.79 -6.471 L-6.726 -6.627 L-6.398 -7.214 L-6.3 -7.679 L-6.241 -7.848 L-5.241 -9.848 L-5.18 -9.949 L-2.8 -13.199 L-2.73 -13.28 L-1.65 -14.36 L-1.41 -14.517 L-1.12 -14.63 L0.124 -15.763 L0.207 -15.827 L1.707 -16.827 L1.793 -16.876 L4.923 -18.376 L5.005 -18.41 L6.125 -18.78 L6.345 -18.815 L6.685 -18.815 L8.13 -19.281 L8.319 -19.315 L11.355 -19.428 L11.452 -19.481 L11.773 -19.565 L12.097 -19.492 L12.191 -19.435 L14.165 -19.435 L14.307 -19.421 L16.677 -18.931 L16.757 -18.909 L18.637 -18.279 L18.699 -18.255 L20.949 -17.255 L21.047 -17.202 L23.917 -15.332 L24.014 -15.256 L26.104 -13.296 L26.161 -13.235 L27.531 -11.605 L27.678 -11.308 L27.688 -11.251 L27.696 -11.194 L27.99 -10.9 L28.108 -10.743 L29.488 -8.243 L29.526 -8.163 L30.516 -5.663 L30.556 -5.517 L30.81 -3.95 L30.86 -3.9 L31.032 -3.616 L31.065 -3.405 L31.065 -2.809 L31.188 -2.507 L31.195 -2.405 L31.195 2.535 Z" fill="#3d6e99" fill-opacity="0.85" stroke="#123" stroke-width="0.25"/>
+<line x1="-26.705" y1="-80.685" x2="-26.705" y2="80.685" stroke="#e08a00" stroke-width="0.3" stroke-dasharray="3 1 0.6 1"/>
+<line x1="11.69" y1="-19.565" x2="11.69" y2="19.565" stroke="#e08a00" stroke-width="0.3" stroke-dasharray="3 1 0.6 1"/>
+</g>
+</g>
+<text x="-12.315" y="19.25" font-size="5" font-weight="bold" fill="#a33" dominant-baseline="middle" transform="rotate(-90 -12.315 19.25)">with_card-1</text>
+<text x="34.895" y="19.25" font-size="5" font-weight="bold" fill="#a33" dominant-baseline="middle" transform="rotate(-90 34.895 19.25)">with_card-2</text>
+</svg>

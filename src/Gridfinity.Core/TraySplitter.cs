@@ -153,7 +153,7 @@ namespace Gridfinity.Core
             result.Notes.Add(string.Format("{0} x {1} units is larger than the {2} bed ({3} x {4} mm with a {5} mm margin fits {6} x {7} units); split into {8} pieces ({9} x {10}).",
                 ax, ay, t.Printer, bedW, bedD, t.BedMargin, fitW, fitD, kx * ky, kx, ky));
 
-            double clr = t.DefaultClearance;
+            double clr = t.GeometryClearance;
             for (int i = 0; i < kx; i++)
             for (int j = 0; j < ky; j++)
             {
@@ -247,7 +247,7 @@ namespace Gridfinity.Core
         /// </summary>
         private static List<int> ChooseCuts(TrayDefinition t, bool alongX, int units, int k, int max)
         {
-            double pitch = GridfinitySpec.Pitch, origin = -units * pitch / 2, clr = t.DefaultClearance;
+            double pitch = GridfinitySpec.Pitch, origin = -units * pitch / 2, clr = t.GeometryClearance;
             var spans = t.Pockets.Select(p =>
             {
                 Vec2 lo, hi;

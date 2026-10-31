@@ -71,7 +71,7 @@ namespace Gridfinity.Core
         [Category("Layout"), Description("AutoGrowGrid never goes deeper than this many cells along Y.")]
         public int MaxUnitsY { get; set; } = 12;
 
-        [Category("Layout"), Description("Total clearance added to every pocket unless the pocket sets its own, mm.")]
+        [Category("Layout"), Description("Total clearance added to every pocket unless the pocket sets its own, mm (half on every side). PrintAllowance (Printer) is added on top.")]
         public double DefaultClearance { get; set; } = 0.4;
 
         [Category("Layout"), Description("Free space kept between pockets and the part edge / inner wall, mm.")]
@@ -102,6 +102,26 @@ namespace Gridfinity.Core
 
         [Category("Printer"), Description("Custom printer bed depth (Y), mm. Used when Printer is Custom.")]
         public double CustomBedDepth { get; set; } = 220;
+
+        [Category("Printer"), Description("Print allowance: extra gap added on every side of every cutout, mm, on top of the clearance, because printed holes and pockets come out smaller than drawn (typically 0.1 to 0.3 mm per side on FDM printers). Raise it if parts fit too tightly, lower it for a well-tuned printer.")]
+        public double PrintAllowance { get; set; } = 0.2;
+
+        /// <summary>Smallest gap per side between a part and its cutout that most FDM printers hold reliably, mm.</summary>
+        public const double MinFitPerSide = 0.25;
+
+        /// <summary>
+        /// DefaultClearance, after handing PrintAllowance to every pocket. Geometry code reads this rather than
+        /// DefaultClearance so the allowance is always applied, however the pockets were added.
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore, Browsable(false)]
+        public double GeometryClearance
+        {
+            get
+            {
+                foreach (var p in Pockets) p.PrintAllowance = PrintAllowance;
+                return DefaultClearance;
+            }
+        }
 
         [Category("Printer"), Description("Space kept clear around the part on each side of the bed (for the skirt or brim), mm.")]
         public double BedMargin { get; set; } = 2;

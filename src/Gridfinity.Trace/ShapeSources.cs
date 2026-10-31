@@ -19,17 +19,24 @@ namespace Gridfinity.Trace
             return PhotoTracer.IsImage(path) || e == ".dxf" || e == ".svg" || e == ".zip";
         }
 
-        /// <summary>The shapes in one file. For a photo, <paramref name="overlayPath"/> receives the tracing preview.</summary>
+        /// <summary>
+        /// The shapes in one file, corrected by the scale reference if one is set. For a photo,
+        /// <paramref name="overlayPath"/> receives the tracing preview.
+        /// </summary>
         public static List<TracedShape> Read(string path, OutlineImportOptions o, List<string> notes, out string overlayPath)
         {
             overlayPath = null;
+            List<TracedShape> shapes;
             if (PhotoTracer.IsImage(path))
             {
                 var r = PhotoTracer.Trace(path, o, notes);
                 overlayPath = r.OverlayPath;
-                return r.Shapes;
+                shapes = r.Shapes;
             }
-            return OutlineImporter.ReadFile(path, notes);
+            else shapes = OutlineImporter.ReadFile(path, notes);
+            // Each photo has its own scale, so the reference is found and applied file by file.
+            ScaleReferences.Apply(shapes, o, Path.GetFileNameWithoutExtension(path), notes);
+            return shapes;
         }
 
         public static List<TracedShape> Read(string path, OutlineImportOptions o, List<string> notes)

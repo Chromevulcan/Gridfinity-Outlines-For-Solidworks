@@ -127,5 +127,44 @@ namespace Gridfinity.Core.Tests
                 Assert.Equal(2, c.Resolved.Pockets.Count(p => p.Bottom == PartBottom.Round && p.HasLabel));
             }
         }
+    
+        private static void RoundedRect(Mat m, Func<double, double, Point> at, double x0, double y0, double x1, double y1, double r, Scalar colour)
+        {
+            Cv2.Rectangle(m, at(x0 + r, y0), at(x1 - r, y1), colour, -1);
+            Cv2.Rectangle(m, at(x0, y0 + r), at(x1, y1 - r), colour, -1);
+            int pr = (int)Math.Round(r * DrawPpm);
+            foreach (var c in new[] { at(x0 + r, y0 + r), at(x1 - r, y0 + r), at(x0 + r, y1 - r), at(x1 - r, y1 - r) })
+                Cv2.Circle(m, c, pr, colour, -1);
+        }
+
+        [Fact]
+        public void A_credit_card_on_the_paper_corrects_a_wrong_paper_size()
+        {
+            var dark = new Scalar(35, 35, 35);
+            using (var photo = SyntheticPhoto((m, at) =>
+            {
+                Cv2.Rectangle(m, at(30, 220), at(150, 238), dark, -1);                          // 120 x 18 mm bar
+                RoundedRect(m, at, 40, 60, 40 + 85.60, 60 + 53.98, 3.18, new Scalar(120, 60, 20)); // a blue bank card
+            }))
+            {
+                // Told the sheet is 2.5 % larger than it is: without the card everything comes out 2.5 % too big.
+                var o = new OutlineImportOptions { Paper = PaperSize.Custom, PaperWidth = PaperW * 1.025, PaperHeight = PaperH * 1.025 };
+                var notes = new List<string>();
+                var r = PhotoTracer.Trace(photo, "parts", o, notes, null);
+                Assert.Equal(2, r.Shapes.Count);
+                double w, h;
+                Box(r.Shapes.OrderBy(x => x.Area).First(), out w, out h);
+                Assert.True(w > 122.4, "uncorrected bar should be too long, was " + w);
+
+                o.ScaleReference = ScaleReferenceKind.CreditCard;
+                double k = ScaleReferences.Apply(r.Shapes, o, "parts", notes);
+                Assert.True(r.Shapes.Count == 1, string.Join("\n", notes));   // the card is not a part
+                Assert.InRange(k, 0.965, 0.985);
+                Box(r.Shapes[0], out w, out h);
+                Assert.InRange(w, 119.5, 120.5);
+                Assert.InRange(h, 17.5, 18.5);
+                Assert.Contains(notes, n => n.Contains("credit card scale reference measured"));
+            }
+        }
     }
 }

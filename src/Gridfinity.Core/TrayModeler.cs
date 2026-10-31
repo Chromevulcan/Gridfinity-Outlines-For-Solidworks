@@ -60,7 +60,7 @@ namespace Gridfinity.Core
 
             // 6. Pockets and parts, as cut layers grouped by depth so every group is one sketch with no overlapping
             // contours. A flat pocket is one layer; a round-bottomed part is a stack of steps (see PartCuts).
-            double clr = t.DefaultClearance;
+            double clr = t.GeometryClearance;
             var layers = t.Pockets.Where(p => p.Shape != PocketShape.Cradle).SelectMany(p => PartCuts.Layers(p, t)).ToList();
             foreach (var g in layers.GroupBy(l => Math.Round(l.Depth, 2)).OrderByDescending(grp => grp.Key))
             {
@@ -185,7 +185,7 @@ namespace Gridfinity.Core
             foreach (var p in t.Pockets.Where(q => q.HasLabel))
             {
                 Vec2 a, b;
-                if (!p.GetLabelLine(t.DefaultClearance, out a, out b)) continue;
+                if (!p.GetLabelLine(t.GeometryClearance, out a, out b)) continue;
                 Vec2 mid = (a + b) * 0.5;
                 if (t.Piece != null && !t.Piece.Contains(mid)) continue; // a split tray puts each name on one piece
                 double len = (b - a).Length;

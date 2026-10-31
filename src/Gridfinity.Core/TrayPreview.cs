@@ -20,7 +20,7 @@ namespace Gridfinity.Core
             var inv = CultureInfo.InvariantCulture;
             double W = t.OuterWidth, D = t.OuterDepth, pad = 6;
             double titleSize = Math.Max(2.5, Math.Min(4.0, (W + 2 * pad) / 40));
-            double clr = t.DefaultClearance;
+            double clr = t.GeometryClearance;
             var sb = new StringBuilder();
             Func<double, string> f = v => v.ToString("0.###", inv);
 

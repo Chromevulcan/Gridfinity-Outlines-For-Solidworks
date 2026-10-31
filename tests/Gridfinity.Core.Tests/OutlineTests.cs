@@ -93,7 +93,7 @@ namespace Gridfinity.Core.Tests
         {
             var ring = Loop.Circle(new Vec2(0, 0), 15).ToPolyline(3);
             var hole = Loop.Circle(new Vec2(0, 0), 8).ToPolyline(3);
-            var t = new TrayDefinition { UnitsX = 1, UnitsY = 1, HeightUnits = 3, AutoLayout = false, DefaultClearance = 1.0 };
+            var t = new TrayDefinition { UnitsX = 1, UnitsY = 1, HeightUnits = 3, AutoLayout = false, DefaultClearance = 1.0, PrintAllowance = 0 };
             var p = OutlinePocket(ring);
             p.Holes = new List<List<Vec2>> { hole };
             p.KeepIslands = true;

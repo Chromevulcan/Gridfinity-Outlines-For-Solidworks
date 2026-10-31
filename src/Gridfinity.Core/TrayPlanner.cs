@@ -162,7 +162,7 @@ namespace Gridfinity.Core
         private static Item Measure(TrayDefinition t, Pocket p, double rotationDeg)
         {
             Vec2 min, max;
-            p.GetLocalBounds(t.DefaultClearance, rotationDeg, out min, out max);
+            p.GetLocalBounds(t.GeometryClearance, rotationDeg, out min, out max);
             return new Item
             {
                 Pocket = p,

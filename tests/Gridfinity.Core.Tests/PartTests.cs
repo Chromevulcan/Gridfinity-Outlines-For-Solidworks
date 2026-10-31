@@ -15,7 +15,7 @@ namespace Gridfinity.Core.Tests
 
         private static TrayDefinition Tray(params Pocket[] pockets)
         {
-            var t = new TrayDefinition { UnitsX = 3, UnitsY = 2, HeightUnits = 6, AutoLayout = false, DefaultClearance = 0, PartCenterlines = true };
+            var t = new TrayDefinition { UnitsX = 3, UnitsY = 2, HeightUnits = 6, AutoLayout = false, DefaultClearance = 0, PrintAllowance = 0, PartCenterlines = true };
             t.Pockets.AddRange(pockets);
             return t;
         }

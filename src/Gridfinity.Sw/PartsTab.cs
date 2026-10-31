@@ -158,6 +158,7 @@ namespace Gridfinity.Sw
             {
                 t.PartTopOffset = o.TopOffset;
                 t.Printer = o.Printer;
+                t.PrintAllowance = o.PrintAllowance;
             }
             t.Pockets.AddRange(pockets);
             t.MaxUnitsX = Math.Max(t.MaxUnitsX, o.MaxUnitsX);

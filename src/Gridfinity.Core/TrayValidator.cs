@@ -1,3 +1,4 @@
+using System.Globalization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,11 +48,25 @@ namespace Gridfinity.Core
             if (t.UnitsY < 1 || t.UnitsY > 20) r.Error("UnitsY must be 1 to 20.");
             if (t.HeightUnits < 1 || t.HeightUnits > 30) r.Error("HeightUnits must be 1 to 30.");
             if (t.DefaultClearance < 0) r.Error("DefaultClearance cannot be negative.");
+            if (t.PrintAllowance < 0 || t.PrintAllowance > 2) r.Error("PrintAllowance must be 0 to 2 mm per side.");
             if (!r.IsValid) return r; // later checks assume sane sizes
 
+            ValidateFit(t, r);
             ValidateStyle(t, r);
             ValidatePockets(t, r);
             return r;
+        }
+
+        // Printed cutouts come out smaller than drawn; a gap below MinFitPerSide is tighter than most FDM printers hold.
+        private static void ValidateFit(TrayDefinition t, ValidationReport r)
+        {
+            double clr = t.GeometryClearance;
+            var tight = t.Pockets.Where(p => p.Fit(clr) / 2 < TrayDefinition.MinFitPerSide - 1e-9).ToList();
+            if (tight.Count == 0) return;
+            r.Warn(string.Format(CultureInfo.InvariantCulture,
+                "{0} pocket(s) (e.g. '{1}') leave only {2:0.##} mm per side between the part and the cutout (clearance {3:0.##} / 2 + PrintAllowance {4:0.##}). " +
+                "Most FDM printers need at least {5:0.##} mm per side for a part to drop in; raise PrintAllowance (Printer) or the clearance.",
+                tight.Count, tight[0].Name, tight[0].Fit(clr) / 2, tight[0].Clearance ?? t.DefaultClearance, t.PrintAllowance, TrayDefinition.MinFitPerSide));
         }
 
         private static void ValidateStyle(TrayDefinition t, ValidationReport r)
@@ -104,7 +119,7 @@ namespace Gridfinity.Core
                     else if (OutlineGeometry.Clean(p.Points) == null) { r.Error(who + "the outline has no area."); geometryOk = false; }
                     else if (p.Points.Count > 2000)
                         r.Warn(who + "the outline has " + p.Points.Count + " points; SolidWorks will be slow. Re-import with a larger SimplifyTolerance.");
-                    if (p.KeepIslands && p.Holes != null && p.Holes.Count > 0 && geometryOk && p.BuildIslandLoops(t.DefaultClearance).Count == 0)
+                    if (p.KeepIslands && p.Holes != null && p.Holes.Count > 0 && geometryOk && p.BuildIslandLoops(t.GeometryClearance).Count == 0)
                         r.Warn(who + "KeepIslands is on but every hole is too small to leave an island (under " + Pocket.MinIslandSize + " mm).");
                 }
                 else if (p.Width <= 0) { r.Error(who + "Width must be positive."); geometryOk = false; }
@@ -118,7 +133,7 @@ namespace Gridfinity.Core
 
                 if (p.Shape == PocketShape.Cradle)
                 {
-                    double cr = (p.Width + (p.Clearance ?? t.DefaultClearance)) / 2;
+                    double cr = (p.Width + (p.Fit(t.GeometryClearance))) / 2;
                     if (Math.Abs(p.RotationDeg) > 1e-9) r.Error(who + "a Cradle cannot be rotated; swap Width and Height instead.");
                     if (p.Depth < cr) r.Error(who + "depth " + p.Depth + " mm is less than the cradle radius " + cr.ToString("0.##") + " mm, so the round bottom would not fit.");
                     if (p.NotchDiameter > 0) r.Warn(who + "finger notches are ignored on a Cradle.");
@@ -147,10 +162,10 @@ namespace Gridfinity.Core
                     continue;
                 }
 
-                Loop loop = p.BuildLoop(t.DefaultClearance);
+                Loop loop = p.BuildLoop(t.GeometryClearance);
                 Vec2 lo, hi;
                 loop.GetBounds(out lo, out hi);
-                Loop notch = p.BuildNotchLoop(t.DefaultClearance);
+                Loop notch = p.BuildNotchLoop(t.GeometryClearance);
                 if (notch != null)
                 {
                     Vec2 nlo, nhi;
@@ -194,7 +209,7 @@ namespace Gridfinity.Core
                 foreach (var p in t.Pockets.Where(q => q.Shape == PocketShape.Cradle))
                 {
                     Vec2 lo, hi;
-                    p.BuildLoop(t.DefaultClearance).GetBounds(out lo, out hi);
+                    p.BuildLoop(t.GeometryClearance).GetBounds(out lo, out hi);
                     if (lo.X < -halfW || hi.X > halfW || lo.Y < -halfD || hi.Y > halfD)
                         r.Error("Cradle '" + p.Name + "' crosses a seam of the split tray; cradles cannot be split.");
                 }
@@ -212,12 +227,12 @@ namespace Gridfinity.Core
                 string who = "Name '" + p.LabelText + "' of '" + p.Name + "': ";
                 if (p.LabelHeight < 3) r.Warn(who + "text under 3 mm high is hard to print.");
                 Vec2 a, b;
-                if (!p.GetLabelLine(t.DefaultClearance, out a, out b)) continue;
+                if (!p.GetLabelLine(t.GeometryClearance, out a, out b)) continue;
                 double len = (b - a).Length, width = TrayModeler.EstimateTextWidth(p.LabelText.Trim(), p.LabelHeight);
                 if (width > len) r.Warn(who + "is longer than the part (about " + width.ToString("0") + " mm against " + len.ToString("0") + " mm), so it is made smaller.");
                 if (t.Piece == null)
                 {
-                    var band = p.BuildLabelBand(t.DefaultClearance);
+                    var band = p.BuildLabelBand(t.GeometryClearance);
                     if (band != null && band.Any(q => q.X < -halfW || q.X > halfW || q.Y < -halfD || q.Y > halfD))
                         r.Warn(who + "may run past the edge of the usable area.");
                 }

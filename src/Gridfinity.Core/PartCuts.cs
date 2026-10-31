@@ -52,7 +52,7 @@ namespace Gridfinity.Core
         public static List<CutLayer> Layers(Pocket p, TrayDefinition t)
         {
             var layers = new List<CutLayer>();
-            double clr = t.DefaultClearance;
+            double clr = t.GeometryClearance;
 
             if (!IsPart(p) || p.Bottom == PartBottom.Flat)
             {
@@ -119,11 +119,11 @@ namespace Gridfinity.Core
         public static HeightField Field(Pocket p, TrayDefinition t)
         {
             if (!IsPart(p) || p.Bottom != PartBottom.Round || p.Points == null || p.Points.Count < 3) return null;
-            double clr = p.Clearance ?? t.DefaultClearance;
+            double clr = p.Fit(t.GeometryClearance);
             string key = string.Join("|", clr, p.RoundMaxThickness, p.KeepIslands, p.Points.Count,
                                      p.Points[0].X, p.Points[0].Y, p.Points[p.Points.Count / 2].X, p.Holes == null ? 0 : p.Holes.Count);
             if (p.HeightCache is HeightField cached && p.HeightCacheKey == key) return cached;
-            var field = HeightField.Build(LocalFootprint(p, t.DefaultClearance), GridMm, p.RoundMaxThickness);
+            var field = HeightField.Build(LocalFootprint(p, t.GeometryClearance), GridMm, p.RoundMaxThickness);
             p.HeightCache = field;
             p.HeightCacheKey = key;
             return field;

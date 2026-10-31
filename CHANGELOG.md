@@ -9,6 +9,8 @@
 - **Splitting for the printer**: printer list with bed sizes, custom bed, margin; oversized trays build as whole-cell pieces `<name>_A1`, ...; `split` CLI command.
 - CLI: photo input, `--round`, `--round-max`, `--offset`, `--step`, `--no-centerlines`, `--paper`, `--scan-dpi`, `--sensitivity`, `--printer`, `--bed`, `--no-split`.
 - Add-in resolves its dependencies and the native tracer from its own folder.
+- **Scale reference**: a credit card, square or rectangle of known size on the paper corrects each photo's scale (and, for a card or rectangle, the tracing's edge width); it is left out of the tray. `--reference card|square:<mm>|<W>x<H>`.
+- **Print allowance** (`PrintAllowance`, 0.2 mm per side by default, `--allowance`): added to every cutout on top of the clearance for printer shrinkage; a warning when any cutout leaves under 0.25 mm per side. Older files get the default, so their pockets are 0.4 mm larger; set 0 for the old sizes.
 
 ## 1.2.0 (Gridfinity Outlines)
 - New `Outline` pocket shape: any traced outline (concave, with holes), offset by the clearance with Clipper2, optional `KeepIslands`.

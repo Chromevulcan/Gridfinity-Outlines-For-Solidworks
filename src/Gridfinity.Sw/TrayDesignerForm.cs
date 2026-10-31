@@ -189,7 +189,7 @@ namespace Gridfinity.Sw
             _tray.AutoGrowGrid = true;
             _tray.MaxUnitsX = Math.Max(_tray.MaxUnitsX, o.MaxUnitsX);
             _tray.MaxUnitsY = Math.Max(_tray.MaxUnitsY, o.MaxUnitsY);
-            if (_tray.Pockets.Count == pockets.Count) { _tray.PartTopOffset = o.TopOffset; _tray.Printer = o.Printer; }
+            if (_tray.Pockets.Count == pockets.Count) { _tray.PartTopOffset = o.TopOffset; _tray.Printer = o.Printer; _tray.PrintAllowance = o.PrintAllowance; }
 
             LayoutResult r = TrayPlanner.SuggestGrid(_tray) ? TrayPlanner.AutoLayout(_tray) : new LayoutResult();
             OutlineImporter.FitHeight(_tray, true);

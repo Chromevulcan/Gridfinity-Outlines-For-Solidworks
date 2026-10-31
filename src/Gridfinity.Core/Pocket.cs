@@ -96,8 +96,15 @@ namespace Gridfinity.Core
         [Category("Part"), Description("Which side of the centreline the name goes on, before the part is turned by layout.")]
         public LabelSide LabelSide { get; set; } = LabelSide.Below;
 
-        [Category("Fit"), Description("Total clearance added to the nominal size, mm. Empty = use the tray default.")]
+        [Category("Fit"), Description("Total clearance added to the nominal size, mm (half on every side). Empty = use the tray default. The tray's PrintAllowance is added on top.")]
         public double? Clearance { get; set; }
+
+        /// <summary>Extra gap per side for printer inaccuracy, copied from the tray (TrayDefinition.PrintAllowance).</summary>
+        [Newtonsoft.Json.JsonIgnore, Browsable(false)]
+        public double PrintAllowance { get; set; }
+
+        /// <summary>Total amount the cutout is larger than the part, mm: clearance plus the print allowance on both sides.</summary>
+        public double Fit(double defaultClearance) { return (Clearance ?? defaultClearance) + 2 * PrintAllowance; }
 
         [Category("Placement"), Description("Centre X relative to the bin centre, mm. Overwritten when the tray has AutoLayout on.")]
         public double X { get; set; }
@@ -154,7 +161,7 @@ namespace Gridfinity.Core
         /// </summary>
         public Loop BuildCradleSection(double defaultClearance, double bottomZ, double topZ)
         {
-            double c = Clearance ?? defaultClearance;
+            double c = Fit(defaultClearance);
             double r = (Width + c) / 2;
             double zc = bottomZ + r;
             if (topZ < zc) topZ = zc + 0.01;
@@ -171,7 +178,7 @@ namespace Gridfinity.Core
         /// <summary>Y extent (low, high) of a cradle, clearance included.</summary>
         public void GetCradleYRange(double defaultClearance, out double yLow, out double yHigh)
         {
-            double len = Height + (Clearance ?? defaultClearance);
+            double len = Height + Fit(defaultClearance);
             yLow = Y - len / 2;
             yHigh = Y + len / 2;
         }
@@ -294,7 +301,7 @@ namespace Gridfinity.Core
         {
             var list = new List<List<Vec2>>();
             if (Shape != PocketShape.Outline || !KeepIslands || Holes == null) return list;
-            double c = Clearance ?? defaultClearance;
+            double c = Fit(defaultClearance);
             foreach (var hole in Holes)
             {
                 if (hole == null || hole.Count < 3) continue;
@@ -314,7 +321,7 @@ namespace Gridfinity.Core
 
         private Loop MakeOutline(double defaultClearance)
         {
-            double c = Clearance ?? defaultClearance;
+            double c = Fit(defaultClearance);
             switch (Shape)
             {
                 case PocketShape.Circle:
@@ -356,7 +363,7 @@ namespace Gridfinity.Core
             var loops = new List<Loop>();
             if (Shape != PocketShape.Outline || !KeepIslands || Holes == null) return loops;
 
-            double c = Clearance ?? defaultClearance;
+            double c = Fit(defaultClearance);
             double rot = RotationDeg * Math.PI / 180.0;
             foreach (var hole in Holes)
             {

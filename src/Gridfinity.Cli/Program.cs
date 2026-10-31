@@ -54,6 +54,8 @@ Photo options (photos of parts lying on a sheet of paper):
   --paper <size>        Letter, A4, Legal, A3, Tabloid, or <W>x<H> in mm (default Letter)
   --scan-dpi <dpi>      the image is a flatbed scan at this resolution (no paper edge to find)
   --sensitivity <0-100> raise for pale parts, lower if shadows are traced (default 50)
+  --reference <ref>     scale reference lying on the paper beside the parts: card (85.60 x 53.98 mm),
+                        square:<side mm>, or <W>x<H> mm for any rectangle; it corrects the scale and is left out
 Tray options:
   --name <text>         tray name (default: first file name)
   --units <X>x<Y>       fixed grid size instead of the smallest that fits
@@ -66,6 +68,7 @@ Tray options:
   --printer <name>      printer to fit, e.g. ""A1 mini"", ""MK4S"", ""K1 Max"" (default Bambu Lab P1S / X1C / A1)
   --bed <W>x<D>         custom printer bed in mm instead of --printer
   --no-split            never split a tray that is larger than the printer
+  --allowance <mm>      print allowance: extra gap per side on every cutout for printer shrinkage (default 0.2)
   --spacing <mm>        gap between pockets (default 2.0)
   --margin <mm>         gap between pockets and the edge (default 1.6)
 Output:
@@ -284,6 +287,21 @@ Output:
                 NameLabels = a.Has("--labels"),
             };
             if (a.Get("--printer") != null) o.Printer = a.Get("--printer");
+            o.PrintAllowance = a.Double("--allowance", 0.2);
+            string reference = a.Get("--reference");
+            if (reference != null)
+            {
+                string r = reference.Trim().ToLowerInvariant();
+                double w, h;
+                var dims = r.StartsWith("square:") ? new[] { r.Substring(7) } : r.Split('x');
+                if (r == "card" || r == "credit-card" || r == "creditcard") o.ScaleReference = ScaleReferenceKind.CreditCard;
+                else if (r.StartsWith("square:") && double.TryParse(dims[0], NumberStyles.Float, CultureInfo.InvariantCulture, out w))
+                { o.ScaleReference = ScaleReferenceKind.Square; o.ReferenceWidth = w; }
+                else if (dims.Length == 2 && double.TryParse(dims[0], NumberStyles.Float, CultureInfo.InvariantCulture, out w) &&
+                         double.TryParse(dims[1], NumberStyles.Float, CultureInfo.InvariantCulture, out h))
+                { o.ScaleReference = ScaleReferenceKind.Rectangle; o.ReferenceWidth = w; o.ReferenceHeight = h; }
+                else throw new ArgumentException("--reference is card, square:<side mm> or <W>x<H> in mm.");
+            }
             if (a.Get("--scan-dpi") != null) { o.PhotoMode = PhotoMode.Scan; o.ScanDpi = a.Double("--scan-dpi", 300); }
             string paper = a.Get("--paper");
             if (paper != null)
@@ -391,7 +409,7 @@ Output:
             {
                 "--depth", "--clearance", "--notch", "--simplify", "--min-area", "--scale", "--name", "--units",
                 "--height-units", "--max-units", "--spacing", "--margin", "-o", "--out", "--out-dir",
-                "--round-max", "--offset", "--step", "--paper", "--scan-dpi", "--sensitivity", "--printer", "--bed"
+                "--round-max", "--offset", "--step", "--paper", "--scan-dpi", "--sensitivity", "--printer", "--bed", "--allowance", "--reference"
             };
 
             public Args(string[] args)

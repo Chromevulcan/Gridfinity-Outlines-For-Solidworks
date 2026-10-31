@@ -85,6 +85,9 @@ namespace Gridfinity.Core
         [Category("Tray"), Description("Printer the tray must fit. A tray larger than its bed is split along cell lines into bins that fit."), TypeConverter(typeof(PrinterNameConverter))]
         public string Printer { get; set; } = PrinterProfiles.DefaultName;
 
+        [Category("Tray"), Description("Print allowance: extra gap on every side of every cutout, mm, on top of the clearance, because printed pockets come out smaller than drawn. 0.2 suits most FDM printers; raise it if parts fit too tightly.")]
+        public double PrintAllowance { get; set; } = 0.2;
+
         [Category("Tray"), Description("Largest grid the tray may grow to along X, cells. A tray larger than the printer is split into pieces when it is built.")]
         public int MaxUnitsX { get; set; } = 5;
 
@@ -131,6 +134,17 @@ namespace Gridfinity.Core
 
         [Category("Photo"), Description("Tracing resolution, pixels per mm of paper. 8 resolves 0.125 mm.")]
         public double PixelsPerMm { get; set; } = 8;
+
+        // ---- Scale reference -----------------------------------------------------------------------
+
+        [Category("Scale reference"), Description("An object of known size lying on the paper next to the parts, used to correct the scale: a credit card, a square or a rectangle (for example a steel rule). It is found by its shape and size, left out of the tray, and every part is rescaled so it measures true. None = the paper (or scan resolution) sets the scale.")]
+        public ScaleReferenceKind ScaleReference { get; set; } = ScaleReferenceKind.None;
+
+        [Category("Scale reference"), Description("Square: its side, mm. Rectangle: its width, mm. Measure a printed square with calipers rather than trusting the print.")]
+        public double ReferenceWidth { get; set; } = 50;
+
+        [Category("Scale reference"), Description("Rectangle only: its height, mm.")]
+        public double ReferenceHeight { get; set; } = 25;
     }
 
     /// <summary>
@@ -329,6 +343,7 @@ namespace Gridfinity.Core
             };
             t.PartTopOffset = o.TopOffset;
             t.Printer = o.Printer;
+            t.PrintAllowance = o.PrintAllowance;
             t.Pockets.AddRange(ToPockets(shapes, o, notes));
             FitHeight(t);
             foreach (var p in t.Pockets.Where(q => q.Bottom == PartBottom.Round))

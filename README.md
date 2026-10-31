@@ -59,6 +59,25 @@ Legal, A3, Tabloid or a custom size). Flatbed scans work too: set **PhotoMode** 
 as part of a part, lower **Sensitivity**; for pale parts, raise it. On the synthetic sample photo
 (`samples/photos/drivers.jpg`, three screwdrivers of 250, 235 and 210 mm) the traced lengths are within 0.2 mm.
 
+### Scale reference
+
+The paper sets the scale, but sheets vary by a millimetre or so and a sheet that is not flat comes out small. For better accuracy
+lay an object of known size on the paper beside the parts and set **ScaleReference** in the import window:
+
+- **Credit card**: any bank or ID card (85.60 x 53.98 mm, [ISO/IEC 7810 ID-1](https://en.wikipedia.org/wiki/ISO/IEC_7810)).
+- **Square**: a gauge block, a square of sheet metal, or a printed square (measure it with calipers and enter that, since
+  printers scale slightly); **ReferenceWidth** is its side.
+- **Rectangle**: anything rectangular, **ReferenceWidth** x **ReferenceHeight**, for example a 150 x 19 mm steel rule. The longer
+  the reference, the better the correction.
+
+The reference is found by its shape and size (a rectangle of the right proportions, within a third of its expected size),
+left out of the tray, and every part from that photo is rescaled so the reference measures true. A card or rectangle has sides
+of clearly different lengths, so it also gives how much wider the tracing draws every edge, and that is trimmed off too. Keep it
+flat, apart from the parts, and darker than the paper (a matt card is fine; a mirror-bright one may not trace). Do not use a
+reference that has the same proportions as one of your parts. The notes say what was measured and how much was corrected. On
+`samples/photos/with_card.jpg` the 160 x 20 mm bar traces at exactly 160 x 20 with the card; told a sheet 2.5 % too big, it
+traces at 164 mm without the card and 159.5 mm with it.
+
 ### Flat or round bottoms
 
 - **Flat**: a flat floor at the part's thickness (Depth) less the Y offset.
@@ -81,6 +100,21 @@ Every part gets a centreline along its length (*Part centerlines*, a constructio
 to place text yourself. Give a part a **LabelText** and it is debossed beside the part, parallel to that centreline, **LabelHeight**
 mm tall, below or above it (**LabelSide**); the layout leaves room for it. *NameLabels* in the import window names every part
 after its file.
+
+### Print allowance
+
+Printed holes and pockets come out smaller than drawn (the outer wall of every hole is squeezed inward a little), and photos are
+only so exact, so a part that fits on screen can be tight in plastic. Two settings keep the fit realistic:
+
+- **Clearance** (per part, 1.0 mm by default for traced parts; DefaultClearance 0.4 mm for others) is the total gap for the
+  part itself, half on each side.
+- **PrintAllowance** (Parts tab, Printer; 0.2 mm) is added on every side of every cutout on top of that, for the printer. Raise it
+  to 0.3 to 0.4 mm if parts fit too tightly, lower it for a well-tuned printer. Round bottoms get it too, so they sit a little
+  deeper.
+
+A traced part therefore gets 0.5 + 0.2 = 0.7 mm per side by default. The tray is flagged when any cutout leaves less than
+0.25 mm per side, tighter than most FDM printers hold, and an allowance outside 0 to 2 mm is an error. Older JSON files get
+the 0.2 mm default, so their pockets are 0.4 mm larger than before; set PrintAllowance to 0 for the old sizes.
 
 ### Splitting for your printer
 
@@ -110,7 +144,8 @@ At the default 2 mm margin a 256 mm bed fits 6 x 6 cells and a 180 mm bed 4 x 4.
 ![Sample: three screwdrivers traced from a photo, round bottoms, split for an A1 mini](samples/photos/out/drivers.preview.png)
 
 `samples/photos/out` has the tray from the sample photo: three screwdrivers with round bottoms and names, 3 x 7 cells, 6 height
-units, split into a 3 x 4 and a 3 x 3 piece for an A1 mini (the dashed red line), plus the tracing (`drivers.trace.jpg`).
+units, split into a 3 x 4 and a 3 x 3 piece for an A1 mini (the dashed red line), plus the tracing (`drivers.trace.jpg`), and
+the tray from `with_card.jpg` (a bar and a socket, scaled by the card, which is left out). `make_sample_photo.py` makes both photos.
 
 ## Outline import options
 
@@ -127,6 +162,8 @@ The same options appear in the import window (as a property list) and on the com
 | Sensitivity | `--sensitivity` | 50 | Raise for pale parts, lower if shadows are traced. |
 | PaperBorder / PixelsPerMm | | 4 mm / 8 | Edge of the sheet to ignore; tracing resolution. |
 | Printer | `--printer`, `--bed`, `--no-split` | P1S / X1C / A1 | Printer the tray has to fit. |
+| PrintAllowance | `--allowance` | 0.2 mm | Extra gap per side on every cutout, for printer shrinkage. |
+| ScaleReference / ReferenceWidth / ReferenceHeight | `--reference card`, `square:50`, `150x19` | None | Object of known size on the paper; corrects the scale. |
 | Clearance | `--clearance` | 1.0 mm | Total clearance, half added on every side. Photo traces are rarely better than 0.5 mm, so 1.0 is a safe start. |
 | KeepIslands | `--keep-islands` | off | Leave material standing inside holes in an outline (for example the ring of a box-end wrench), shrunk by the clearance. |
 | NotchDiameter | `--notch` | 0 | Round finger notch at the centre of each pocket. |
@@ -152,6 +189,7 @@ separate parts again (even/odd nesting).
 dotnet build src/Gridfinity.Cli -c Release
 gridfinity-outlines tray samples/outlines/toolset_dxf.zip --magnets --labels --notch 18 -o toolset.json
 gridfinity-outlines tray samples/photos/drivers.jpg --round --labels --offset 2 --printer "A1 mini" --max-units 8x8
+gridfinity-outlines tray samples/photos/with_card.jpg --reference card --allowance 0.3
 gridfinity-outlines split big-tray.json --printer "MK4S"
 gridfinity-outlines watch %USERPROFILE%\Downloads --out-dir C:\Trays --depth 15
 gridfinity-outlines check toolset.json
@@ -203,8 +241,8 @@ This add-in has its own COM identity, menu, log folder and assembly names (`Grid
 
 ## Tested, and not tested
 
-- Tested here: the core library, photo tracer and command-line tool on .NET 8 (70 tests, including specification checks, a
-  synthetic perspective photo traced to within 0.5 mm, round bottoms never undercutting the part, labels along the centreline,
+- Tested here: the core library, photo tracer and command-line tool on .NET 8 (79 tests, including specification checks, a
+  synthetic perspective photo traced to within 0.5 mm, a card correcting a wrong paper size, the print allowance, round bottoms never undercutting the part, labels along the centreline,
   and splitting for every printer), and the add-in compiles against the SolidWorks 2026 interop files.
 - **Not yet tested in SolidWorks:** the Parts tab, the import window, the *Build tray from photo or outlines* command, round
   bottoms (one cut per layer), the offset reference plane (its direction is checked and flipped if needed), the centreline sketch, text

@@ -24,7 +24,8 @@ namespace Gridfinity.Sw
         private readonly TabControl _views = new TabControl { Dock = DockStyle.Fill };
         private SplitResult _split;
 
-        // Tracing a photo takes a moment, so results are kept until the file or the photo options change.
+        // Tracing a photo takes a moment, so results are kept until the file, the photo options or the scale
+        // reference change. Outline files go through the same path so the scale reference applies to them too.
         private readonly Dictionary<string, Tuple<List<TracedShape>, string, List<string>>> _traced =
             new Dictionary<string, Tuple<List<TracedShape>, string, List<string>>>(StringComparer.OrdinalIgnoreCase);
         private readonly TextBox _notes = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical };
@@ -263,12 +264,12 @@ namespace Gridfinity.Sw
         private static string PhotoKey(string path, OutlineImportOptions o)
         {
             return string.Join("|", path, File.Exists(path) ? File.GetLastWriteTimeUtc(path).Ticks : 0, o.Paper, o.PaperWidth, o.PaperHeight,
-                               o.PhotoMode, o.ScanDpi, o.Sensitivity, o.PaperBorder, o.PixelsPerMm);
+                               o.PhotoMode, o.ScanDpi, o.Sensitivity, o.PaperBorder, o.PixelsPerMm,
+                               o.ScaleReference, o.ReferenceWidth, o.ReferenceHeight);
         }
 
         private List<TracedShape> Read(string path, List<string> notes)
         {
-            if (!PhotoTracer.IsImage(path)) return OutlineImporter.ReadFile(path, notes);
             string key = PhotoKey(path, Options);
             Tuple<List<TracedShape>, string, List<string>> hit;
             if (!_traced.TryGetValue(key, out hit))

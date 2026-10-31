@@ -32,7 +32,7 @@ namespace Gridfinity.Sw
             g.TranslateTransform(surface.Width / 2f, surface.Height / 2f);
             g.ScaleTransform(scale, -scale);
 
-            double clr = t.DefaultClearance;
+            double clr = t.GeometryClearance;
             using (var outline = new Pen(Color.FromArgb(68, 85, 102), 1.2f / scale))
             using (var thin = new Pen(Color.FromArgb(153, 170, 187), 0.8f / scale) { DashStyle = DashStyle.Dash })
             using (var magnet = new Pen(Color.FromArgb(187, 136, 136), 0.8f / scale))
